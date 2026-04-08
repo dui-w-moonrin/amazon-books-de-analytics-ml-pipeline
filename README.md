@@ -94,3 +94,102 @@ erDiagram
         string review_summary
         string review_text
     }
+```
+
+## 🔄 Pipeline Flow & Outputs
+
+### 🔁 Pipeline Flow
+
+The pipeline follows a **batch-oriented workflow**:
+
+1. Ingest raw data into **Google Cloud Storage (GCS)**  
+2. Execute **PySpark jobs on Dataproc** for data cleansing and transformation  
+3. Standardize and split data into:
+   - analytics-ready datasets  
+   - DS-ready curated datasets  
+4. Publish outputs as **BigQuery views**  
+5. Enable downstream consumption via **Looker Studio**
+
+---
+
+### ⏱ Orchestration (Airflow DAG)
+
+![Airflow DAG](docs/images/airflow_dag.png)
+
+The pipeline is orchestrated using **Apache Airflow (Cloud Composer)** to manage task dependencies, scheduling, and batch execution.
+
+---
+
+### 📦 Serving Outputs
+
+#### 📊 Analytics-ready Views (for Data Analysts)
+- `vw_book_catalog`
+- `vw_review_summary`
+- `vw_review_trend`
+
+#### 🤖 DS-ready Curated Dataset (for Data Scientists)
+- `vw_ds_review_text_curated`
+
+---
+
+### 📊 Dashboard & Report
+
+![Dashboard](docs/images/dashboard.png)
+![Report](docs/images/report.png)
+
+These outputs demonstrate how the pipeline supports downstream analytics and reporting use cases.
+
+---
+
+## 💡 Skills Demonstrated
+
+- End-to-end **data pipeline design (Bronze → Silver → Gold)**  
+- Data processing using **PySpark on Dataproc**  
+- Workflow orchestration with **Apache Airflow (Cloud Composer)**  
+- Data warehousing and serving via **BigQuery**  
+- Delivering analytics-ready and ML-ready datasets  
+- Supporting downstream teams (Data Analyst / Data Scientist)
+
+---
+
+## 📁 Repository Structure
+
+```text
+project-root/
+│
+├── README.md
+├── requirements.txt
+├── docker-compose.yml
+│
+├── dags/                # Airflow DAG definitions
+├── pyspark/             # PySpark transformation scripts
+├── sql/                 # BigQuery views
+├── docs/
+│   └── images/          # Diagrams and screenshots
+├── config/              # Configuration files
+└── tests/               # Optional testing scripts
+```
+## 🔒 Scope (MVP)
+
+This project focuses on a minimum viable data pipeline:
+
+- Batch data ingestion and transformation
+- PySpark-based data processing
+- BigQuery serving layer
+- Basic dashboard and report demonstration
+- GitHub-ready documentation
+
+### The following items are intentionally out of scope:
+
+- Real-time / streaming pipeline
+- Full production monitoring and alerting
+- Advanced data quality frameworks
+- Infrastructure-as-Code (Terraform)
+
+## 🚧 Future Improvements
+- Add data quality validation checks (e.g., null, duplicates, constraints)
+- Implement unit and integration testing for pipeline reliability
+- Extend orchestration with more robust DAG structure
+- Introduce streaming ingestion (Kafka)
+- Explore container orchestration (Kubernetes)
+- Improve performance optimization and partitioning strategies
