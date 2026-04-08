@@ -1,0 +1,5 @@
+pyspark
+pandas
+google-cloud-storage
+google-cloud-bigquery
+pyyaml

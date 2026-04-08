@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Airflow
+airflow.db
+airflow-webserver.pid
+standalone_admin_password.txt
+
+# Data files
+*.csv
+*.parquet
+*.json
+
+# Local temp / outputs
+tmp/
+temp/
+.cache/
+
+# Spark
+metastore_db/
+spark-warehouse/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
