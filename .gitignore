@@ -1,49 +1,67 @@
+# =========================
 # Python
+# =========================
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
+
+# Virtual environment
 .venv/
 venv/
 env/
 
+# =========================
 # Environment / secrets
+# =========================
 .env
 .env.*
+!.env.example
 
-# Jupyter
-.ipynb_checkpoints/
-
-# OS / Editor
-.DS_Store
-Thumbs.db
+# =========================
+# VS Code / IDE
+# =========================
 .vscode/
 .idea/
 
-# Logs
-*.log
-logs/
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
 
-# Airflow
-airflow.db
-airflow-webserver.pid
-standalone_admin_password.txt
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
 
-# Data files
-*.csv
-*.parquet
-*.json
-
-# Local temp / outputs
-tmp/
-temp/
-.cache/
-
-# Spark
-metastore_db/
-spark-warehouse/
-
-# Test / coverage
+# =========================
+# Python test / coverage artifacts
+# =========================
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
+
+# =========================
+# Build / packaging
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Spark / local runtime noise
+# =========================
+metastore_db/
+spark-warehouse/
+derby.log
+
+# =========================
+# Local test playground
+# ignore everything inside local test folders
+# =========================
+tests_local/
+playground/
+scratch/
+tmp/

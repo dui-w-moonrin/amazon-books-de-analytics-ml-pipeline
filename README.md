@@ -42,7 +42,7 @@ The pipeline is designed to:
 
 ### Architecture Layers / Tech Stack
 
-- **Source Layer**: Amazon Books raw dataset (`book_details`, `reviews`) as the upstream data source  
+- **Source Layer**: Amazon Books raw dataset (`books_data`, `books_rating`) as the upstream data source  
 - **Storage Layer (Bronze)**: **Google Cloud Storage (GCS)** for raw and landing data zones  
 - **Processing Layer (Silver)**: **PySpark** jobs executed on **Dataproc** for data cleansing, standardization, and transformation  
 - **Orchestration Layer**: **Apache Airflow (Cloud Composer)** for batch workflow orchestration and task scheduling  
@@ -54,7 +54,7 @@ The pipeline is designed to:
 
 This project uses the [**Amazon Books Reviews dataset**](https://www.kaggle.com/datasets/mohamedbakhet/amazon-books-reviews/data), consisting of approximately **3 GB of raw data** across two primary tables.
 
-_The files have information about 3M book reviews for 212,404 unique book and users who gives these reviews for each book, monthly update._
+_The files have information about 3M book reviews for 212,404 unique book and users who gives these reviews for each book. The source dataset is updated monthly, but this project demonstrates a batch-oriented DE design_
 
 ### 📊 Data Overview
 
