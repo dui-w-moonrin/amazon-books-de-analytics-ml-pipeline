@@ -82,7 +82,7 @@ erDiagram
         string published_date_raw
         string info_link
         string categories
-        int ratings_count
+        string ratings_count_raw
     }
 
     BOOKS_RATING {
