@@ -65,3 +65,12 @@ tests_local/
 playground/
 scratch/
 tmp/
+# =========================
+# Data layers
+# =========================
+data/raw/
+data/landing/
+data/bronze/
+data/silver/
+data/gold/
+data/tmp/
