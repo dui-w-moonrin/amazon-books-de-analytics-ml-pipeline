@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -22,23 +23,44 @@ def load_simple_env(env_path: Path) -> None:
         os.environ.setdefault(key.strip(), value.strip())
 
 
-def resolve_path(project_root: Path, raw_path: str) -> Path:
+def resolve_path(base_dir: Path, raw_path: str) -> Path:
     path = Path(raw_path)
     if not path.is_absolute():
-        path = project_root / path
+        path = base_dir / path
     return path.resolve()
 
 
 def main() -> None:
     load_simple_env(project_root / ".env")
 
-    config_path_raw = os.getenv("BRONZE_JOB_CONFIG")
-    if not config_path_raw:
-        raise ValueError("Missing BRONZE_JOB_CONFIG in .env")
+    parser = argparse.ArgumentParser(
+        description="Run bronze ingestion job from external config"
+    )
+    parser.add_argument(
+        "--config",
+        required=True,
+        help="Config filename (inside CONFIG_DIR) or relative/absolute path",
+    )
+    args = parser.parse_args()
 
+    config_dir_raw = os.getenv("CONFIG_DIR", "config")
     duckdb_db_path = os.getenv("DUCKDB_DATABASE_PATH", ":memory:")
 
-    config_path = resolve_path(project_root, config_path_raw)
+    config_dir = resolve_path(project_root, config_dir_raw)
+    config_arg = Path(args.config)
+
+    # กรณีส่งมาแค่ชื่อไฟล์ เช่น books_data_bronze.json
+    if not config_arg.is_absolute():
+        if config_arg.parent == Path("."):
+            config_path = (config_dir / config_arg).resolve()
+        else:
+            config_path = (project_root / config_arg).resolve()
+    else:
+        config_path = config_arg.resolve()
+
+    if not config_path.exists():
+        raise FileNotFoundError(f"Config file not found: {config_path}")
+
     config = json.loads(config_path.read_text(encoding="utf-8"))
 
     job = BronzeIngestionJob(

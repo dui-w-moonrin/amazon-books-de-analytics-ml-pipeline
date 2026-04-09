@@ -1,0 +1,23 @@
+{
+  "job_name": "books_rating_bronze",
+  "source_path": "data/raw/Books_rating.csv",
+  "output_path": "data/bronze/books_rating_full.parquet",
+  "source_type": "csv",
+  "output_type": "parquet",
+  "csv_options": {
+    "header": true,
+    "all_varchar": true
+  },
+  "columns": [
+    { "source": "Id", "target": "id" },
+    { "source": "Title", "target": "title" },
+    { "source": "Price", "target": "price_raw" },
+    { "source": "User_id", "target": "user_id" },
+    { "source": "profileName", "target": "profile_name" },
+    { "source": "review/helpfulness", "target": "review_helpfulness" },
+    { "source": "review/score", "target": "review_score_raw" },
+    { "source": "review/time", "target": "review_time_raw" },
+    { "source": "review/summary", "target": "review_summary" },
+    { "source": "review/text", "target": "review_text" }
+  ]
+}
