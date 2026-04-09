@@ -65,32 +65,35 @@ _The files have information about 3M book reviews for 212,404 unique book and us
 
 ---
 
-### 🧱 Entity Relationship (ERD)
+### 🧱 Entity Relationship - ERD (source-aligned)
 
 ```mermaid
 erDiagram
     Direction LR
-    BOOKS_DATA ||--o{ BOOKS_RATING : has
+    BOOKS_DATA ||--o{ BOOKS_RATING : joins_on_title_candidate
 
     BOOKS_DATA {
-        int book_id PK
-        string title
+        string title PK
         string description
         string authors
+        string image_url
+        string preview_link
         string publisher
-        date publishedDate
+        string published_date_raw
+        string info_link
         string categories
-        int ratingsCount
+        int ratings_count
     }
 
     BOOKS_RATING {
         int id PK
-        int book_id FK
-        float price
+        string title FK
+        string price_raw
         string user_id
-        string profileName
-        int review_score
-        datetime review_time
+        string profile_name
+        string reviewhelpfulness
+        string review_score
+        string review_time_raw
         string review_summary
         string review_text
     }

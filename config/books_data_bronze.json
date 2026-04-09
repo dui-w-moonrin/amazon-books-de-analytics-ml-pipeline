@@ -1,0 +1,23 @@
+{
+  "job_name": "books_data_bronze",
+  "source_path": "data/raw/books_data.csv",
+  "output_path": "data/bronze/books_data_full.parquet",
+  "source_type": "csv",
+  "output_type": "parquet",
+  "csv_options": {
+    "header": true,
+    "all_varchar": true
+  },
+  "columns": [
+    { "source": "Title", "target": "title" },
+    { "source": "description", "target": "description" },
+    { "source": "authors", "target": "authors" },
+    { "source": "image", "target": "image_url" },
+    { "source": "previewLink", "target": "preview_link" },
+    { "source": "publisher", "target": "publisher" },
+    { "source": "publishedDate", "target": "published_date_raw" },
+    { "source": "infoLink", "target": "info_link" },
+    { "source": "categories", "target": "categories" },
+    { "source": "ratingsCount", "target": "ratings_count_raw" }
+  ]
+}
