@@ -29,7 +29,7 @@ The pipeline is designed to:
 
 ![Business Use Case](docs/images/business_use_case.png)
 
-**Amazon Books Data ~(2GB)**
+**Amazon Books Data ~(3GB)**
 - **Data Analyst (DA)** needs clean, analytics-ready outputs for dashboards and reports because the raw dataset is too large and too messy for direct spreadsheet or BI use.
 - **Data Scientist (DS)** needs curated review-level text data for future NLP and sentiment analysis use cases.
 - **Data Engineer (DE)** responds by defining output requirements and refresh frequency first, then designing a **batch-oriented pipeline** to serve both downstream consumers.
