@@ -1,7 +1,9 @@
 {
   "job_name": "books_data_bronze",
-  "source_path": "data/raw/books_data.csv",
-  "output_path": "data/bronze/books_data_full.parquet",
+  "source_dataset": "books_data",
+  "source_asset": "raw_csv",
+  "output_dataset": "books_data",
+  "output_asset": "bronze_full",
   "source_type": "csv",
   "output_type": "parquet",
   "csv_options": {

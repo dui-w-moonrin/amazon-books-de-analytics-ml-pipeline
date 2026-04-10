@@ -1,0 +1,108 @@
+{
+  "dataset_name": "books_rating",
+  "input_asset": "bronze_full",
+  "output_asset": "silver_standardized",
+  "input_format": "parquet",
+  "output_format": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 32,
+  
+  "output_mode": "select_targets_only",
+  "passthrough_columns": [],
+  "drop_columns_after_transform": [],
+  "column_rules": [
+    {
+      "source": "id",
+      "target": "book_source_id",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "title",
+      "target": "title",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "title",
+      "target": "title_key",
+      "target_type": "string",
+      "trim": true,
+      "collapse_spaces": true,
+      "blank_to_null": true,
+      "lower": true
+    },
+    {
+      "source": "price_raw",
+      "target": "price",
+      "target_type": "double",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "user_id",
+      "target": "user_id",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "profile_name",
+      "target": "profile_name",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "review_helpfulness",
+      "target": "review_helpfulness",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "review_score_raw",
+      "target": "review_score",
+      "target_type": "int",
+      "trim": true,
+      "blank_to_null": true,
+      "cast_via": "double"
+    },
+    {
+      "source": "review_time_raw",
+      "target": "review_time",
+      "target_type": "long",
+      "trim": true,
+      "blank_to_null": true,
+      "cast_via": "double"
+    },
+    {
+      "source": "review_time",
+      "target": "review_timestamp",
+      "target_type": "timestamp",
+      "parse_mode": "unix_seconds_to_timestamp"
+    },
+    {
+      "source": "review_timestamp",
+      "target": "review_date",
+      "target_type": "date",
+      "parse_mode": "timestamp_to_date"
+    },
+    {
+      "source": "review_summary",
+      "target": "review_summary",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "review_text",
+      "target": "review_text",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    }
+  ]
+}

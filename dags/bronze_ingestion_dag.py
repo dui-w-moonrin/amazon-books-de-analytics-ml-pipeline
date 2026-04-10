@@ -16,7 +16,7 @@ with DAG(
         task_id="ingest_books_data",
         bash_command=(
             "cd /opt/airflow && "
-            "python scripts/run_bronze_job.py --config config/books_data_bronze.json"
+            "python scripts/run_bronze_job.py --config config/bronze/books_data_bronze.json"
         ),
     )
 
@@ -24,8 +24,8 @@ with DAG(
         task_id="ingest_books_rating",
         bash_command=(
             "cd /opt/airflow && "
-            "python scripts/run_bronze_job.py --config config/books_rating_bronze.json"
+            "python scripts/run_bronze_job.py --config config/bronze/books_rating_bronze.json"
         ),
     )
 
-    ingest_books_data >> ingest_books_rating
+    [ingest_books_data, ingest_books_rating]
