@@ -1,0 +1,10 @@
+{
+  "books_data": {
+    "raw_csv": "data/raw/Books_data.csv",
+    "bronze_full": "data/bronze/books_data_full.parquet"
+  },
+  "books_rating": {
+    "raw_csv": "data/raw/Books_rating.csv",
+    "bronze_full": "data/bronze/books_rating_full.parquet"
+  }
+}
