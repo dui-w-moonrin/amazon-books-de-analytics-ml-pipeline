@@ -1,8 +1,9 @@
-import json
 from pathlib import Path
 from typing import Dict, List
 
 import duckdb
+
+from src.utils.config_loader import get_asset_path
 
 
 class BronzeIngestionJob:
@@ -17,8 +18,51 @@ class BronzeIngestionJob:
             path = self.project_root / path
         return path.resolve()
 
+    def _resolve_asset_path(
+        self,
+        dataset_key_field: str,
+        asset_key_field: str,
+        fallback_path_field: str,
+    ) -> Path:
+        dataset_name = self.config.get(dataset_key_field)
+        asset_name = self.config.get(asset_key_field)
+
+        if dataset_name and asset_name:
+            asset_path = get_asset_path(dataset_name, asset_name)
+            return self._resolve_path(asset_path)
+
+        raw_path = self.config.get(fallback_path_field)
+        if raw_path:
+            return self._resolve_path(raw_path)
+
+        raise KeyError(
+            f"Missing config keys: either "
+            f"({dataset_key_field}, {asset_key_field}) "
+            f"or {fallback_path_field} must be provided."
+        )
+
+    def _resolve_source_path(self) -> Path:
+        return self._resolve_asset_path(
+            dataset_key_field="source_dataset",
+            asset_key_field="source_asset",
+            fallback_path_field="source_path",
+        )
+
+    def _resolve_output_path(self) -> Path:
+        return self._resolve_asset_path(
+            dataset_key_field="output_dataset",
+            asset_key_field="output_asset",
+            fallback_path_field="output_path",
+        )
+
     def _sql_escape(self, path: Path) -> str:
         return str(path).replace("'", "''")
+
+    def _sql_bool(self, value: bool) -> str:
+        return "true" if value else "false"
+
+    def _get_csv_option(self, key: str, default):
+        return self.config.get("csv_options", {}).get(key, default)
 
     def _get_source_columns(self) -> List[str]:
         return [col["source"] for col in self.config["columns"]]
@@ -45,6 +89,8 @@ class BronzeIngestionJob:
         source_path: Path,
     ) -> List[str]:
         source_sql = self._sql_escape(source_path)
+        header_sql = self._sql_bool(self._get_csv_option("header", True))
+        all_varchar_sql = self._sql_bool(self._get_csv_option("all_varchar", True))
 
         rows = con.execute(
             f"""
@@ -52,8 +98,8 @@ class BronzeIngestionJob:
             SELECT *
             FROM read_csv_auto(
                 '{source_sql}',
-                header = true,
-                all_varchar = true
+                header = {header_sql},
+                all_varchar = {all_varchar_sql}
             )
             """
         ).fetchall()
@@ -74,14 +120,17 @@ class BronzeIngestionJob:
         lines = []
         for col in self.config["columns"]:
             lines.append(f'"{col["source"]}" AS {col["target"]}')
-        return ",\n                ".join(lines)
+        return ",\n                    ".join(lines)
 
     def run(self) -> None:
         self._validate_column_config()
 
-        source_path = self._resolve_path(self.config["source_path"])
-        output_path = self._resolve_path(self.config["output_path"])
+        source_path = self._resolve_source_path()
+        output_path = self._resolve_output_path()
         output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        header_sql = self._sql_bool(self._get_csv_option("header", True))
+        all_varchar_sql = self._sql_bool(self._get_csv_option("all_varchar", True))
 
         con = duckdb.connect(self.duckdb_db_path)
 
@@ -100,8 +149,8 @@ class BronzeIngestionJob:
                     {select_clause}
                 FROM read_csv_auto(
                     '{source_sql}',
-                    header = true,
-                    all_varchar = true
+                    header = {header_sql},
+                    all_varchar = {all_varchar_sql}
                 )
                 """
             )

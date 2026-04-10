@@ -2,7 +2,8 @@ import json
 from pathlib import Path
 
 
-CONFIG_PATH = Path("config/data_assets.json")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CONFIG_PATH = PROJECT_ROOT / "config" / "data_assets.json"
 
 
 def load_data_assets() -> dict:
@@ -26,4 +27,4 @@ def get_asset_path(dataset_name: str, asset_name: str) -> str:
             f"Asset '{asset_name}' not found for dataset '{dataset_name}'"
         )
 
-    return dataset_assets[asset_name]
+    return assets[dataset_name][asset_name]

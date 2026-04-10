@@ -1,7 +1,9 @@
 {
   "job_name": "books_rating_bronze",
-  "source_path": "data/raw/Books_rating.csv",
-  "output_path": "data/bronze/books_rating_full.parquet",
+  "source_dataset": "books_rating",
+  "source_asset": "raw_csv",
+  "output_dataset": "books_rating",
+  "output_asset": "bronze_full",
   "source_type": "csv",
   "output_type": "parquet",
   "csv_options": {
