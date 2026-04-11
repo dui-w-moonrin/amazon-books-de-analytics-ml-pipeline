@@ -1,24 +1,24 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Any
 
 import duckdb
 
-from src.utils.config_loader import get_asset_path
+from src.utils.config_loader import get_resolved_asset_path
+from src.utils.job_runtime import resolve_path
 
 
 class BronzeIngestionJob:
-    def __init__(self, project_root: Path, duckdb_db_path: str, config: Dict):
+    def __init__(
+        self,
+        project_root: Path,
+        duckdb_db_path: str,
+        config: dict[str, Any],
+    ):
         self.project_root = project_root
         self.duckdb_db_path = duckdb_db_path
         self.config = config
 
-    def _resolve_path(self, raw_path: str) -> Path:
-        path = Path(raw_path)
-        if not path.is_absolute():
-            path = self.project_root / path
-        return path.resolve()
-
-    def _resolve_asset_path(
+    def _resolve_asset_or_path(
         self,
         dataset_key_field: str,
         asset_key_field: str,
@@ -28,12 +28,15 @@ class BronzeIngestionJob:
         asset_name = self.config.get(asset_key_field)
 
         if dataset_name and asset_name:
-            asset_path = get_asset_path(dataset_name, asset_name)
-            return self._resolve_path(asset_path)
+            return get_resolved_asset_path(
+                project_root=self.project_root,
+                dataset_name=dataset_name,
+                asset_name=asset_name,
+            )
 
         raw_path = self.config.get(fallback_path_field)
         if raw_path:
-            return self._resolve_path(raw_path)
+            return resolve_path(self.project_root, raw_path)
 
         raise KeyError(
             f"Missing config keys: either "
@@ -42,14 +45,14 @@ class BronzeIngestionJob:
         )
 
     def _resolve_source_path(self) -> Path:
-        return self._resolve_asset_path(
+        return self._resolve_asset_or_path(
             dataset_key_field="source_dataset",
             asset_key_field="source_asset",
             fallback_path_field="source_path",
         )
 
     def _resolve_output_path(self) -> Path:
-        return self._resolve_asset_path(
+        return self._resolve_asset_or_path(
             dataset_key_field="output_dataset",
             asset_key_field="output_asset",
             fallback_path_field="output_path",
@@ -61,16 +64,25 @@ class BronzeIngestionJob:
     def _sql_bool(self, value: bool) -> str:
         return "true" if value else "false"
 
-    def _get_csv_option(self, key: str, default):
+    def _get_csv_option(self, key: str, default: Any) -> Any:
         return self.config.get("csv_options", {}).get(key, default)
 
-    def _get_source_columns(self) -> List[str]:
+    def _get_source_columns(self) -> list[str]:
         return [col["source"] for col in self.config["columns"]]
 
-    def _get_target_columns(self) -> List[str]:
+    def _get_target_columns(self) -> list[str]:
         return [col["target"] for col in self.config["columns"]]
 
-    def _validate_column_config(self) -> None:
+    def _validate_job_config(self) -> None:
+        source_type = self.config.get("source_type", "csv")
+        output_type = self.config.get("output_type", "parquet")
+
+        if source_type != "csv":
+            raise ValueError(f"Unsupported bronze source_type: {source_type}")
+
+        if output_type != "parquet":
+            raise ValueError(f"Unsupported bronze output_type: {output_type}")
+
         source_cols = self._get_source_columns()
         target_cols = self._get_target_columns()
 
@@ -87,10 +99,12 @@ class BronzeIngestionJob:
         self,
         con: duckdb.DuckDBPyConnection,
         source_path: Path,
-    ) -> List[str]:
+    ) -> list[str]:
         source_sql = self._sql_escape(source_path)
         header_sql = self._sql_bool(self._get_csv_option("header", True))
-        all_varchar_sql = self._sql_bool(self._get_csv_option("all_varchar", True))
+        all_varchar_sql = self._sql_bool(
+            self._get_csv_option("all_varchar", True)
+        )
 
         rows = con.execute(
             f"""
@@ -106,10 +120,7 @@ class BronzeIngestionJob:
 
         return [row[0] for row in rows]
 
-    def _validate_source_schema(
-        self,
-        actual_columns: List[str],
-    ) -> None:
+    def _validate_source_schema(self, actual_columns: list[str]) -> None:
         expected_columns = self._get_source_columns()
         missing = [col for col in expected_columns if col not in actual_columns]
 
@@ -118,12 +129,16 @@ class BronzeIngestionJob:
 
     def _build_select_clause(self) -> str:
         lines = []
+
         for col in self.config["columns"]:
-            lines.append(f'"{col["source"]}" AS {col["target"]}')
+            source = col["source"]
+            target = col["target"]
+            lines.append(f'"{source}" AS "{target}"')
+
         return ",\n                    ".join(lines)
 
     def run(self) -> None:
-        self._validate_column_config()
+        self._validate_job_config()
 
         source_path = self._resolve_source_path()
         output_path = self._resolve_output_path()

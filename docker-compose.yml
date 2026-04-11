@@ -108,6 +108,21 @@ services:
       start_period: 5s
     restart: always
 
+  spark-lab:
+    image: quay.io/jupyter/pyspark-notebook:latest
+    container_name: spark-lab
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./playground:/home/jovyan/work/playground
+      - ./data:/home/jovyan/work/data
+      - ./src:/home/jovyan/work/src
+      - ./config:/home/jovyan/work/config
+    working_dir: /home/jovyan/work
+    command: start-notebook.py --NotebookApp.token=''
+
+    
+
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
     # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
@@ -338,3 +353,4 @@ services:
 
 volumes:
   postgres-db-volume:
+
