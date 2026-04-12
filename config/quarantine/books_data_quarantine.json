@@ -1,0 +1,26 @@
+{
+  "dataset_name": "books_data",
+  "input_asset": "silver_standardized",
+  "eligible_output_asset": "silver_eligible",
+  "quarantine_output_asset": "silver_quarantine",
+  "input_format": "parquet",
+  "output_format": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": null,
+  "quarantine_stage": "silver",
+  "quarantine_entity": "books_data",
+  "rules": {
+    "require_non_null_columns": [
+      "title",
+      "title_key"
+    ]
+  },
+  "spark": {
+    "master": "local[1]",
+    "app_name": "silver-quarantine-books-data",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}
