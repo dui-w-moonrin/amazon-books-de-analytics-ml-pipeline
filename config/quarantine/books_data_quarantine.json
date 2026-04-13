@@ -1,6 +1,6 @@
 {
   "dataset_name": "books_data",
-  "input_asset": "silver_standardized",
+  "input_asset": "silver_quality_enriched",
   "eligible_output_asset": "silver_eligible",
   "quarantine_output_asset": "silver_quarantine",
   "input_format": "parquet",
