@@ -119,8 +119,8 @@ with DAG(
         ),
     )
 
-    cross_check_title_hash_relationship = BashOperator(
-        task_id="cross_check_title_hash_relationship",
+    validate_review_to_book_relationship = BashOperator(
+        task_id="validate_review_to_book_relationship",
         bash_command=build_command(
             "python scripts/run_silver_cross_check_relationship.py "
             "--config config/relationship_checks/books_title_hash_relationship.json"
@@ -128,12 +128,12 @@ with DAG(
     )
 
     standardize_books_data >> quality_enrich_books_data
-    quality_enrich_books_data >> books_data_completeness_check
+    quality_enrich_books_data >> quarantine_books_data
+    quarantine_books_data >> books_data_completeness_check
     books_data_completeness_check >> books_data_consistency_check
     books_data_consistency_check >> books_data_validity_check
     books_data_validity_check >> books_data_uniqueness_check
-    books_data_uniqueness_check >> quarantine_books_data
-    quarantine_books_data >> books_data_silver_snapshot
+    books_data_uniqueness_check >> books_data_silver_snapshot
 
     standardize_books_rating >> quality_enrich_books_rating
     quality_enrich_books_rating >> books_rating_completeness_check
@@ -142,4 +142,4 @@ with DAG(
     books_rating_validity_check >> books_rating_uniqueness_check
     books_rating_uniqueness_check >> books_rating_silver_snapshot
 
-    [books_data_silver_snapshot, books_rating_silver_snapshot] >> cross_check_title_hash_relationship
+    [books_data_silver_snapshot, books_rating_silver_snapshot] >> validate_review_to_book_relationship
