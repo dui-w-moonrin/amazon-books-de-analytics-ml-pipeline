@@ -5,12 +5,15 @@
     "silver_standardized": "data/silver/books_data_silver.parquet",
     "silver_quality_enriched": "data/silver/books_data_silver_quality.parquet",
     "silver_eligible": "data/silver/books_data_silver_eligible.parquet",
-    "silver_quarantine": "data/quarantine/books_data_quarantine.parquet"
+    "silver_quarantine": "data/quarantine/books_data_quarantine.parquet",
+    "gold_books_serving_da": "data/gold/books_serving_da.parquet"
   },
   "books_rating": {
     "raw_csv": "data/raw/Books_rating.csv",
     "bronze_full": "data/bronze/books_rating_full.parquet",
     "silver_standardized": "data/silver/books_rating_silver.parquet",
-    "silver_quality_enriched": "data/silver/books_rating_silver_quality.parquet"
+    "silver_quality_enriched": "data/silver/books_rating_silver_quality.parquet",
+    "gold_reviews_serving_da": "data/gold/reviews_serving_da.parquet",
+    "gold_reviews_serving_ds": "data/gold/reviews_serving_ds.parquet"
   }
 }
