@@ -1,5 +1,6 @@
 {
   "dataset_name": "books_rating",
+  "quality_dimension": "completeness",
   "input_asset": "silver_quality_enriched",
   "input_format": "parquet",
   "summary_output_path": "artifacts/data_quality/books_rating/summary",
