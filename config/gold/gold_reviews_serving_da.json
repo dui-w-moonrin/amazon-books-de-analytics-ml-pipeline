@@ -1,0 +1,59 @@
+{
+  "output_name": "reviews_serving_da",
+  "inputs": {
+    "books": {
+      "dataset_name": "books_data",
+      "asset_name": "silver_quality_enriched",
+      "format": "parquet"
+    },
+    "reviews": {
+      "dataset_name": "books_rating",
+      "asset_name": "silver_quality_enriched",
+      "format": "parquet"
+    }
+  },
+  "serving": {
+    "base_input": "reviews",
+    "joins": [
+      {
+        "right_input": "books",
+        "left_on": ["title_hash"],
+        "right_on": ["title_hash"],
+        "how": "inner",
+        "right_select_columns": ["title_hash"]
+      }
+    ],
+    "filters": [
+      {
+        "column": "title_hash",
+        "condition": "is_not_null"
+      }
+    ],
+    "select_columns": [
+      "book_source_id",
+      "title_key",
+      "title",
+      "price",
+      "review_score",
+      "review_timestamp",
+      "review_date",
+      "review_summary",
+      "title_hash"
+    ],
+    "deduplicate_on": ["book_source_id"]
+  },
+  "output": {
+    "path": "data/gold/reviews_serving_da.parquet",
+    "format": "parquet",
+    "mode": "overwrite",
+    "partitions": 1
+  },
+  "spark": {
+    "master": "local[1]",
+    "app_name": "gold-reviews-serving-da",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}
