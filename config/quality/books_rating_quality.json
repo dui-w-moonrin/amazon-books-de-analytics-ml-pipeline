@@ -1,0 +1,42 @@
+{
+  "dataset_name": "books_rating",
+  "input_asset": "silver_standardized",
+  "output_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "output_format": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 32,
+  "hash_rules": [
+    {
+      "source": "title_key",
+      "target": "title_hash",
+      "method": "xxhash64"
+    }
+  ],
+  "flag_rules": [
+    {
+      "source": "price",
+      "target": "has_price",
+      "rule": "is_not_null"
+    },
+    {
+      "source": "user_id",
+      "target": "has_user_id",
+      "rule": "is_not_null"
+    },
+    {
+      "source": "review_text",
+      "target": "has_review_text",
+      "rule": "is_not_null"
+    }
+  ],
+  "score_rules": [],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "silver-quality-books-rating",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}

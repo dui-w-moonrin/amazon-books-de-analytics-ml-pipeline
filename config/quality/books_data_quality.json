@@ -1,0 +1,70 @@
+{
+  "dataset_name": "books_data",
+  "input_asset": "silver_standardized",
+  "output_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "output_format": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 4,
+  "hash_rules": [
+    {
+      "source": "title_key",
+      "target": "title_hash",
+      "method": "xxhash64"
+    }
+  ],
+  "flag_rules": [
+    {
+      "source": "description",
+      "target": "has_description",
+      "rule": "is_not_null"
+    },
+    {
+      "source": "authors",
+      "target": "has_authors",
+      "rule": "is_not_null"
+    },
+    {
+      "source": "publisher",
+      "target": "has_publisher",
+      "rule": "is_not_null"
+    },
+    {
+      "source": "published_date",
+      "target": "has_published_date",
+      "rule": "is_not_null"
+    },
+    {
+      "source": "categories",
+      "target": "has_categories",
+      "rule": "is_not_null"
+    },
+    {
+      "source": "ratings_count",
+      "target": "has_ratings_count",
+      "rule": "is_not_null"
+    }
+  ],
+  "score_rules": [
+    {
+      "target": "completeness_score",
+      "method": "sum_flags",
+      "sources": [
+        "has_description",
+        "has_authors",
+        "has_publisher",
+        "has_published_date",
+        "has_categories",
+        "has_ratings_count"
+      ]
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "silver-quality-books-data",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}
