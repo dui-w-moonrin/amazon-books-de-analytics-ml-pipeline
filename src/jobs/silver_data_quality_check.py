@@ -21,6 +21,12 @@ class SilverDataQualityCheckJob:
             raise KeyError("Missing required config key: dataset_name")
         return dataset_name
 
+    def _get_quality_dimension(self) -> str:
+        quality_dimension = self.config.get("quality_dimension")
+        if not quality_dimension:
+            raise KeyError("Missing required config key: quality_dimension")
+        return quality_dimension
+
     def _resolve_input_path(self) -> Path:
         dataset_name = self._get_dataset_name()
         input_asset = self.config.get("input_asset", "silver_quality_enriched")
@@ -49,6 +55,7 @@ class SilverDataQualityCheckJob:
 
     def _create_spark_session(self) -> SparkSession:
         dataset_name = self._get_dataset_name()
+        quality_dimension = self._get_quality_dimension()
         spark_config = self.config.get("spark", {})
 
         builder = (
@@ -57,7 +64,7 @@ class SilverDataQualityCheckJob:
             .appName(
                 spark_config.get(
                     "app_name",
-                    f"silver-data-quality-check-{dataset_name}",
+                    f"silver-data-quality-check-{dataset_name}-{quality_dimension}",
                 )
             )
             .config(
@@ -147,8 +154,62 @@ class SilverDataQualityCheckJob:
                 f"Unsupported failed_rows_output_format: {output_format}"
             )
 
+    @staticmethod
+    def _print_summary_block(
+        dataset_name: str,
+        quality_dimension: str,
+        summary_rows: list[dict[str, Any]],
+    ) -> None:
+        total_checks = len(summary_rows)
+        passed_checks = sum(
+            1 for row in summary_rows if row["status"] == "passed"
+        )
+        failed_checks = sum(
+            1 for row in summary_rows if row["status"] == "failed"
+        )
+        critical_failed_checks = sum(
+            1
+            for row in summary_rows
+            if row["severity"] == "critical" and row["status"] == "failed"
+        )
+        warning_failed_checks = sum(
+            1
+            for row in summary_rows
+            if row["severity"] == "warning" and row["status"] == "failed"
+        )
+
+        print("=" * 60)
+        print("DATA QUALITY SUMMARY")
+        print(f"dataset_name={dataset_name}")
+        print(f"quality_dimension={quality_dimension}")
+        print(f"total_checks={total_checks}")
+        print(f"passed_checks={passed_checks}")
+        print(f"failed_checks={failed_checks}")
+        print(f"critical_failed_checks={critical_failed_checks}")
+        print(f"warning_failed_checks={warning_failed_checks}")
+        print("=" * 60)
+
+        failed_rows = [
+            row for row in summary_rows if row["status"] == "failed"
+        ]
+
+        if failed_rows:
+            print("FAILED CHECKS")
+            for row in failed_rows:
+                print(
+                    f"- {row['check_name']}: "
+                    f"severity={row['severity']} "
+                    f"failed_rows={row['failed_rows']} "
+                    f"failed_pct={row['failed_pct']}"
+                )
+            print("=" * 60)
+        else:
+            print("ALL CHECKS PASSED")
+            print("=" * 60)
+
     def run(self) -> None:
         dataset_name = self._get_dataset_name()
+        quality_dimension = self._get_quality_dimension()
         input_format = self.config.get("input_format", "parquet")
         summary_output_format = self.config.get("summary_output_format", "csv")
         failed_rows_output_format = self.config.get(
@@ -188,25 +249,33 @@ class SilverDataQualityCheckJob:
 
             print("DONE")
             print(f"dataset_name={dataset_name}")
+            print(f"quality_dimension={quality_dimension}")
             print(f"input_path={input_path}")
             print(f"summary_output_path={summary_output_path}")
             print(f"failed_rows_base_path={failed_rows_base_path}")
 
             for row in summary_rows:
                 print(
+                    f"dimension={row['quality_dimension']} "
                     f"check={row['check_name']} "
                     f"severity={row['severity']} "
                     f"status={row['status']} "
                     f"failed_rows={row['failed_rows']}"
                 )
 
+            self._print_summary_block(
+                dataset_name=dataset_name,
+                quality_dimension=quality_dimension,
+                summary_rows=summary_rows,
+            )
+
             if critical_failures:
                 failed_names = ", ".join(
                     row["check_name"] for row in critical_failures
                 )
                 raise ValueError(
-                    f"Critical data quality checks failed for {dataset_name}: "
-                    f"{failed_names}"
+                    f"Critical data quality checks failed for "
+                    f"{dataset_name}/{quality_dimension}: {failed_names}"
                 )
 
         finally:

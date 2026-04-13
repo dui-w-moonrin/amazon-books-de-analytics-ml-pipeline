@@ -30,10 +30,31 @@ with DAG(
         ),
     )
 
-    data_quality_check_books_data = BashOperator(
-        task_id="data_quality_check_books_data",
+    books_data_completeness_check = BashOperator(
+        task_id="books_data_completeness_check",
         bash_command=build_command(
-            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_data_quality_checks.json"
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_data_completeness_checks.json"
+        ),
+    )
+
+    books_data_consistency_check = BashOperator(
+        task_id="books_data_consistency_check",
+        bash_command=build_command(
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_data_consistency_checks.json"
+        ),
+    )
+
+    books_data_validity_check = BashOperator(
+        task_id="books_data_validity_check",
+        bash_command=build_command(
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_data_validity_checks.json"
+        ),
+    )
+
+    books_data_uniqueness_check = BashOperator(
+        task_id="books_data_uniqueness_check",
+        bash_command=build_command(
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_data_uniqueness_checks.json"
         ),
     )
 
@@ -58,12 +79,49 @@ with DAG(
         ),
     )
 
-    data_quality_check_books_rating = BashOperator(
-        task_id="data_quality_check_books_rating",
+    books_rating_completeness_check = BashOperator(
+        task_id="books_rating_completeness_check",
         bash_command=build_command(
-            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_rating_quality_checks.json"
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_rating_completeness_checks.json"
         ),
     )
 
-    standardize_books_data >> quality_enrich_books_data >> data_quality_check_books_data >> quarantine_books_data
-    standardize_books_rating >> quality_enrich_books_rating >> data_quality_check_books_rating
+    books_rating_consistency_check = BashOperator(
+        task_id="books_rating_consistency_check",
+        bash_command=build_command(
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_rating_consistency_checks.json"
+        ),
+    )
+
+    books_rating_validity_check = BashOperator(
+        task_id="books_rating_validity_check",
+        bash_command=build_command(
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_rating_validity_checks.json"
+        ),
+    )
+
+    books_rating_uniqueness_check = BashOperator(
+        task_id="books_rating_uniqueness_check",
+        bash_command=build_command(
+            "python scripts/run_silver_data_quality_check.py --config config/quality_checks/books_rating_uniqueness_checks.json"
+        ),
+    )
+
+    (
+        standardize_books_data
+        >> quality_enrich_books_data
+        >> books_data_completeness_check
+        >> books_data_consistency_check
+        >> books_data_validity_check
+        >> books_data_uniqueness_check
+        >> quarantine_books_data
+    )
+
+    (
+        standardize_books_rating
+        >> quality_enrich_books_rating
+        >> books_rating_completeness_check
+        >> books_rating_consistency_check
+        >> books_rating_validity_check
+        >> books_rating_uniqueness_check
+    )

@@ -9,6 +9,10 @@ class ConfigDrivenDataQualityChecker:
         self.df = df
         self.config = config
         self.dataset_name: str = config.get("dataset_name", "unknown_dataset")
+        self.quality_dimension: str = config.get(
+            "quality_dimension",
+            "unknown_dimension",
+        )
         self.checks: list[dict[str, Any]] = config.get("checks", [])
 
         self._validate_config()
@@ -125,6 +129,7 @@ class ConfigDrivenDataQualityChecker:
             results.append(
                 {
                     "dataset_name": self.dataset_name,
+                    "quality_dimension": self.quality_dimension,
                     "check_name": check["name"],
                     "check_type": check["type"],
                     "severity": check["severity"],
