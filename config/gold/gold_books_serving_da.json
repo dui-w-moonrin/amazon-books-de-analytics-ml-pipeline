@@ -3,7 +3,7 @@
   "inputs": {
     "books": {
       "dataset_name": "books_data",
-      "asset_name": "silver_quality_enriched",
+      "asset_name": "silver_eligible",
       "format": "parquet"
     },
     "reviews": {
