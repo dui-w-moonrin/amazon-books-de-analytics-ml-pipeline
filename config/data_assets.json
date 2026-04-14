@@ -1,6 +1,6 @@
 {
   "books_data": {
-    "raw_csv": "data/raw/Books_data.csv",
+    "raw_csv": "data/raw/books_data.csv",
     "bronze_full": "data/bronze/books_data_full.parquet",
     "silver_standardized": "data/silver/books_data_silver.parquet",
     "silver_quality_enriched": "data/silver/books_data_silver_quality.parquet",
@@ -9,7 +9,7 @@
     "gold_books_serving_da": "data/gold/books_serving_da.parquet"
   },
   "books_rating": {
-    "raw_csv": "data/raw/Books_rating.csv",
+    "raw_csv": "data/raw/books_rating.csv",
     "bronze_full": "data/bronze/books_rating_full.parquet",
     "silver_standardized": "data/silver/books_rating_silver.parquet",
     "silver_quality_enriched": "data/silver/books_rating_silver_quality.parquet",
