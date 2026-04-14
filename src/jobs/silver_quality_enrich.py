@@ -11,6 +11,22 @@ from src.utils.job_runtime import resolve_path
 
 
 class SilverQualityEnrichJob:
+    """
+    Enrich Silver data with quality-related derived columns.
+
+    Responsibilities:
+    - resolve input and output paths
+    - read standardized Silver data
+    - apply config-driven quality enrichment rules
+    - write enriched Silver output
+
+    Inputs:
+    - project root path
+    - quality enrichment config
+
+    Output:
+    - Silver dataset enriched with hashes, flags, and quality scores
+    """
     def __init__(self, project_root: Path, config: dict[str, Any]):
         self.project_root = project_root
         self.config = config

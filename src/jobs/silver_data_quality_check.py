@@ -11,6 +11,25 @@ from src.utils.job_runtime import resolve_path
 
 
 class SilverDataQualityCheckJob:
+    """
+    Run data quality checks against a Silver dataset.
+
+    Responsibilities:
+    - read the configured Silver input
+    - execute config-driven quality checks
+    - write summary results
+    - write failed row samples for each failed check
+    - raise an error when critical checks fail
+
+    Inputs:
+    - project root path
+    - data quality check config
+
+    Output:
+    - quality summary dataset
+    - failed row sample outputs
+    - pipeline failure when critical checks fail
+    """
     def __init__(self, project_root: Path, config: dict[str, Any]):
         self.project_root = project_root
         self.config = config

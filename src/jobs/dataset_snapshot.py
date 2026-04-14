@@ -6,6 +6,24 @@ from src.utils.config_loader import get_resolved_asset_path
 
 
 class DatasetSnapshotJob:
+    """
+    Print a lightweight snapshot of a dataset for inspection.
+
+    Responsibilities:
+    - resolve dataset asset path
+    - read the input dataset with Spark
+    - print columns, schema, sample rows, and row count
+
+    Inputs:
+    - dataset name
+    - asset name
+    - stage label
+    - input format
+    - sample row limit
+
+    Output:
+    - console snapshot for debugging and pipeline checkpoint visibility
+    """
     def __init__(
         self,
         project_root: Path,

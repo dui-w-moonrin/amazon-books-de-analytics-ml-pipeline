@@ -5,6 +5,22 @@ from pyspark.sql import functions as F
 
 
 class ConfigDrivenQualityEnricher:
+    """
+    Add quality-related derived columns to a Spark DataFrame.
+
+    Responsibilities:
+    - validate quality enrichment rules
+    - generate hash columns
+    - generate boolean quality flags
+    - generate score columns from configured flag sets
+
+    Inputs:
+    - input Spark DataFrame
+    - quality enrichment config
+
+    Output:
+    - enriched Spark DataFrame with quality helper columns
+    """
     def __init__(self, df: DataFrame, config: dict[str, Any]):
         self.df = df
         self.config = config
