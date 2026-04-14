@@ -5,6 +5,24 @@ from pyspark.sql import functions as F
 
 
 class CrossTableRelationshipChecker:
+    """
+    Validate key coverage between two related datasets.
+
+    Responsibilities:
+    - compare distinct relationship keys across two DataFrames
+    - identify keys that exist on the left side but not on the right side
+    - calculate relationship coverage metrics
+    - return failed key samples for inspection
+
+    Inputs:
+    - left Spark DataFrame
+    - right Spark DataFrame
+    - relationship check config
+
+    Output:
+    - summary metrics for the relationship check
+    - failed key sample DataFrame
+    """
     def __init__(
         self,
         left_df: DataFrame,

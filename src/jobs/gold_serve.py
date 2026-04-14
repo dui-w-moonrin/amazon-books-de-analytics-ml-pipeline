@@ -11,12 +11,20 @@ from src.utils.job_runtime import resolve_path
 
 class GoldServeJob:
     """
-    Shared serving job for DA / DS outputs.
+    Build Gold serving datasets for downstream consumers.
 
-    Reuse strategy:
-    - same job class
-    - same transformer
-    - different configs per consumer/output
+    Responsibilities:
+    - resolve input datasets from config
+    - read one or more prepared upstream datasets
+    - apply config-driven serving logic
+    - write serving outputs for DA or DS use cases
+
+    Inputs:
+    - project root path
+    - Gold serving config
+
+    Output:
+    - Gold dataset written to the configured serving output path
     """
 
     def __init__(self, project_root: Path, config: dict):

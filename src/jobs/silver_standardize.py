@@ -11,6 +11,22 @@ from src.utils.job_runtime import resolve_path
 
 
 class SilverStandardizeJob:
+    """
+    Standardize Bronze data into the Silver layer.
+
+    Responsibilities:
+    - resolve input and output paths
+    - read the configured Bronze asset
+    - apply config-driven column transformations
+    - write standardized Silver output
+
+    Inputs:
+    - project root path
+    - silver standardization config
+
+    Output:
+    - standardized Silver dataset written to the configured output path
+    """
     def __init__(self, project_root: Path, config: dict[str, Any]):
         self.project_root = project_root
         self.config = config

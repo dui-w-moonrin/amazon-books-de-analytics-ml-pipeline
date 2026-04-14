@@ -9,6 +9,24 @@ from src.utils.job_runtime import resolve_path
 
 
 class SilverQuarantineJob:
+    """
+    Split Silver data into eligible and quarantine outputs.
+
+    Responsibilities:
+    - resolve input and output paths
+    - evaluate quarantine rules from config
+    - separate valid rows from quarantined rows
+    - attach quarantine metadata to failed rows
+    - write both eligible and quarantine datasets
+
+    Inputs:
+    - project root path
+    - quarantine config
+
+    Output:
+    - eligible Silver dataset
+    - quarantine dataset with quarantine reason and metadata
+    """
     def __init__(self, project_root: Path, config: dict[str, Any]):
         self.project_root = project_root
         self.config = config

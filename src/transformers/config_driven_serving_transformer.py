@@ -6,17 +6,21 @@ from pyspark.sql import functions as F
 
 class ConfigDrivenServingTransformer:
     """
-    Generic serving-layer transformer.
+    Build serving-layer outputs from one or more prepared input DataFrames.
 
-    Current supported flow:
-    - choose one base input
-    - optional joins
-    - optional null filters
-    - final select
-    - optional deduplication
+    Responsibilities:
+    - select a configured base input
+    - apply optional joins
+    - apply optional filters
+    - select final output columns
+    - apply optional deduplication
 
-    DA and DS can share the same transformer.
-    The difference should come from config only.
+    Inputs:
+    - dictionary of named input DataFrames
+    - serving config
+
+    Output:
+    - serving-ready Spark DataFrame for DA or DS consumption
     """
 
     def __init__(

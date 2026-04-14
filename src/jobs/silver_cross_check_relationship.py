@@ -11,6 +11,24 @@ from src.utils.job_runtime import resolve_path
 
 
 class SilverCrossCheckRelationshipJob:
+    """
+    Run a cross-table relationship check between two Silver datasets.
+
+    Responsibilities:
+    - resolve left and right input datasets
+    - compare configured relationship keys
+    - write summary results
+    - write missing-key samples
+    - raise an error when a critical relationship check fails
+
+    Inputs:
+    - project root path
+    - cross-table relationship check config
+
+    Output:
+    - relationship check summary
+    - failed row sample output for missing keys
+    """
     def __init__(self, project_root: Path, config: dict[str, Any]):
         self.project_root = project_root
         self.config = config

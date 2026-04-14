@@ -6,6 +6,23 @@ from pyspark.sql.window import Window
 
 
 class ConfigDrivenColumnTransformer:
+    """
+    Apply config-driven column transformations to a Spark DataFrame.
+
+    Responsibilities:
+    - validate column transformation rules
+    - apply string cleanup and parsing rules
+    - cast values into target types
+    - generate optional surrogate keys
+    - shape the final output columns
+
+    Inputs:
+    - input Spark DataFrame
+    - column transformation config
+
+    Output:
+    - transformed Spark DataFrame for the Silver standardization step
+    """
     def __init__(self, df: DataFrame, config: dict[str, Any]):
         self.df = df
         self.config = config

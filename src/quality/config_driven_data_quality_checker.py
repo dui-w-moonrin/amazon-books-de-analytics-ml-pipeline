@@ -5,6 +5,23 @@ from pyspark.sql import functions as F
 
 
 class ConfigDrivenDataQualityChecker:
+    """
+    Execute config-driven data quality checks on a Spark DataFrame.
+
+    Responsibilities:
+    - validate configured checks
+    - build failed-row datasets for each check
+    - calculate summary results for pass/fail status
+    - return failed row samples for downstream reporting
+
+    Inputs:
+    - input Spark DataFrame
+    - data quality check config
+
+    Output:
+    - list of quality summary rows
+    - dictionary of failed-row sample DataFrames
+    """
     def __init__(self, df: DataFrame, config: dict[str, Any]):
         self.df = df
         self.config = config

@@ -8,6 +8,24 @@ from src.utils.job_runtime import resolve_path
 
 
 class BronzeIngestionJob:
+    """
+    Ingest raw source data into the Bronze layer.
+
+    Responsibilities:
+    - resolve source and output paths from config
+    - validate source schema against configured column mappings
+    - read raw CSV data with DuckDB
+    - rename and select configured columns
+    - write Bronze output as Parquet
+
+    Inputs:
+    - project root path
+    - DuckDB database path
+    - bronze ingestion config
+
+    Output:
+    - Bronze Parquet dataset written to the configured output path
+    """
     def __init__(
         self,
         project_root: Path,
