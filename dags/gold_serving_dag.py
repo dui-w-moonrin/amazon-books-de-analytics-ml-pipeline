@@ -34,7 +34,6 @@ with DAG(
     catchup=False,
     tags=["amazon-books", "gold", "serving"],
 ) as dag:
-
     serve_books_serving_da = BashOperator(
         task_id="serve_books_serving_da",
         bash_command=build_gold_command(
@@ -69,24 +68,23 @@ with DAG(
         ),
     )
 
+    serve_reviews_serving_ds = BashOperator(
+        task_id="serve_reviews_serving_ds",
+        bash_command=build_gold_command(
+            "config/gold/gold_reviews_serving_ds.json"
+        ),
+    )
+
+    snapshot_gold_reviews_serving_ds = BashOperator(
+        task_id="snapshot_gold_reviews_serving_ds",
+        bash_command=build_snapshot_command(
+            dataset_name="books_rating",
+            asset_name="gold_reviews_serving_ds",
+            stage_name="gold",
+            input_format="parquet",
+        ),
+    )
+
     serve_books_serving_da >> snapshot_gold_books_serving_da
     serve_reviews_serving_da >> snapshot_gold_reviews_serving_da
-
-    # serve_reviews_serving_ds = BashOperator(
-    #     task_id="serve_reviews_serving_ds",
-    #     bash_command=build_gold_command(
-    #         "config/gold/gold_reviews_serving_ds.json"
-    #     ),
-    # )
-
-    # snapshot_gold_reviews_serving_ds = BashOperator(
-    #     task_id="snapshot_gold_reviews_serving_ds",
-    #     bash_command=build_snapshot_command(
-    #         dataset_name="books_rating",
-    #         asset_name="gold_reviews_serving_ds",
-    #         stage_name="gold",
-    #         input_format="parquet",
-    #     ),
-    # )
-
-    # serve_reviews_serving_ds >> snapshot_gold_reviews_serving_ds
+    serve_reviews_serving_ds >> snapshot_gold_reviews_serving_ds
