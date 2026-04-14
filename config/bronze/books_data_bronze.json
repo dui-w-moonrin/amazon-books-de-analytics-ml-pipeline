@@ -6,6 +6,8 @@
   "output_asset": "bronze_full",
   "source_type": "csv",
   "output_type": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 4,
   "csv_options": {
     "header": true,
     "all_varchar": true
@@ -21,5 +23,13 @@
     { "source": "infoLink", "target": "info_link" },
     { "source": "categories", "target": "categories" },
     { "source": "ratingsCount", "target": "ratings_count_raw" }
-  ]
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "bronze-books-data",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
 }

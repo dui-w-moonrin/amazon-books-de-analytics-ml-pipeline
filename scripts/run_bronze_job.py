@@ -1,5 +1,4 @@
 import argparse
-import os
 import sys
 from pathlib import Path
 
@@ -34,15 +33,8 @@ def main() -> None:
     config_path = resolve_config_path(PROJECT_ROOT, args.config)
     config = load_json_file(config_path)
 
-    duckdb_db_path = (
-        config.get("duckdb_db_path")
-        or os.getenv("DUCKDB_DATABASE_PATH")
-        or ":memory:"
-    )
-
     job = BronzeIngestionJob(
         project_root=PROJECT_ROOT,
-        duckdb_db_path=duckdb_db_path,
         config=config,
     )
     job.run()
