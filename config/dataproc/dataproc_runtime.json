@@ -1,35 +1,23 @@
 {
   "project_id": "amazon-books-de-pipeline",
   "region": "asia-southeast1",
-  "gcs": {
-    "bronze_entrypoint_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket/code/dataproc/bronze_entrypoint.py",
-    "snapshot_entrypoint_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket/code/dataproc/snapshot_entrypoint.py",
-    "data_assets_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket/config/assets/dataproc.data_assets.json",
-    "books_data_bronze_config_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket/config/dataproc/bronze/books_data_bronze.json",
-    "books_rating_bronze_config_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket/config/dataproc/bronze/books_rating_bronze.json"
-  },
+  "bucket_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket",
   "batch": {
     "runtime_version": "2.2",
     "service_account": "994096182929-compute@developer.gserviceaccount.com",
     "default_dataproc_properties": {
       "dataproc.tier": "standard",
-
       "spark.driver.cores": "4",
       "spark.driver.memory": "4g",
-
       "spark.executor.instances": "2",
       "spark.executor.cores": "4",
       "spark.executor.memory": "4g",
-
       "spark.dataproc.driver.disk.size": "250g",
       "spark.dataproc.executor.disk.size": "250g",
-
       "spark.sql.shuffle.partitions": "8",
       "spark.default.parallelism": "4",
       "spark.sql.files.maxPartitionBytes": "134217728",
-      "spark.sql.parquet.compression.codec": "snappy",
-      "parquet.block.size": "134217728",
-      "parquet.page.size": "1048576"
+      "spark.sql.parquet.compression.codec": "snappy"
     }
   }
 }

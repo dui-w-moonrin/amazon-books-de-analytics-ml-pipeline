@@ -84,3 +84,7 @@ data/silver/
 data/gold/
 data/tmp/
 data/quarantine/
+# =========================================================
+# Repo Structure
+# =========================================================
+repo_structure_clean.txt

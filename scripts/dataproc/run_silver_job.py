@@ -1,0 +1,52 @@
+import argparse
+import os
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+os.environ.setdefault("PIPELINE_MODE", "dataproc")
+os.environ.setdefault("PIPELINE_CONFIG_ROOT", "config/dataproc")
+os.environ.setdefault(
+    "DATA_ASSETS_CONFIG_PATH",
+    "gs://asia-southeast1-amazon-book-6e65499b-bucket/config/assets/dataproc.data_assets.json",
+)
+
+from src.jobs.silver_standardize import SilverStandardizeJob
+from src.utils.job_runtime import (
+    load_json_file,
+    load_simple_env,
+    resolve_config_path,
+)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run silver standardization job from config"
+    )
+    parser.add_argument(
+        "--config",
+        required=True,
+        help="Config filename or gs:// path",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    load_simple_env(PROJECT_ROOT / ".env")
+    args = parse_args()
+
+    config_path = resolve_config_path(PROJECT_ROOT, args.config)
+    config = load_json_file(config_path)
+
+    job = SilverStandardizeJob(
+        project_root=PROJECT_ROOT,
+        config=config,
+    )
+    job.run()
+
+
+if __name__ == "__main__":
+    main()
