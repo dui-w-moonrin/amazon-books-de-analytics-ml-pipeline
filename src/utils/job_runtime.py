@@ -26,15 +26,26 @@ def resolve_path(base_dir: Path, raw_path: str | Path) -> Path:
     return path.resolve()
 
 
-def resolve_config_path(project_root: Path, config_arg: str) -> Path:
-    config_dir_raw = os.getenv("CONFIG_DIR", "config")
-    config_dir = resolve_path(project_root, config_dir_raw)
+def get_pipeline_mode() -> str:
+    return os.getenv("PIPELINE_MODE", "local").strip().lower()
 
+
+def get_config_root(project_root: Path) -> Path:
+    raw_path = os.getenv("PIPELINE_CONFIG_ROOT")
+    if raw_path:
+        return resolve_path(project_root, raw_path)
+
+    mode = get_pipeline_mode()
+    return resolve_path(project_root, f"config/{mode}")
+
+
+def resolve_config_path(project_root: Path, config_arg: str) -> Path:
+    config_root = get_config_root(project_root)
     config_path = Path(config_arg)
 
     if not config_path.is_absolute():
         if config_path.parent == Path("."):
-            config_path = config_dir / config_path
+            config_path = config_root / config_path
         else:
             config_path = project_root / config_path
 

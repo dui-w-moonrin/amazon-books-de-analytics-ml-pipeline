@@ -1,10 +1,18 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+os.environ.setdefault("PIPELINE_MODE", "local")
+os.environ.setdefault("PIPELINE_CONFIG_ROOT", "config/local")
+os.environ.setdefault(
+    "DATA_ASSETS_CONFIG_PATH",
+    "config/assets/local.data_assets.json",
+)
 
 from src.jobs.dataset_snapshot import DatasetSnapshotJob
 from src.utils.job_runtime import load_simple_env
@@ -12,33 +20,21 @@ from src.utils.job_runtime import load_simple_env
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Run dataset snapshot checkpoint job"
+        description="Run dataset snapshot job"
     )
-    parser.add_argument(
-        "--dataset",
-        required=True,
-        help="Dataset key in config/data_assets.json, e.g. books_data",
-    )
-    parser.add_argument(
-        "--asset",
-        required=True,
-        help="Asset key in config/data_assets.json, e.g. bronze_full",
-    )
-    parser.add_argument(
-        "--stage",
-        required=True,
-        help="Stage label for logging, e.g. bronze or silver",
-    )
+    parser.add_argument("--dataset", required=True, help="Dataset name")
+    parser.add_argument("--asset", required=True, help="Asset name")
+    parser.add_argument("--stage", required=True, help="Pipeline stage name")
     parser.add_argument(
         "--input-format",
         default="parquet",
-        help="Input format, e.g. parquet or csv",
+        help="Input format (default: parquet)",
     )
     parser.add_argument(
         "--sample-rows",
         type=int,
         default=5,
-        help="Number of sample rows to show",
+        help="Number of sample rows to display",
     )
     return parser.parse_args()
 

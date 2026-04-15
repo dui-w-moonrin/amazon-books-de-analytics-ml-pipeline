@@ -11,7 +11,14 @@
   "max_records_per_file": 50000,
   "csv_options": {
     "header": true,
-    "all_varchar": true
+    "all_varchar": true,
+    "multiLine": true,
+    "quote": "\"",
+    "escape": "\"",
+    "mode": "PERMISSIVE",
+    "ignoreLeadingWhiteSpace": true,
+    "ignoreTrailingWhiteSpace": true,
+    "encoding": "UTF-8"
   },
   "columns": [
     { "source": "Id", "target": "id" },

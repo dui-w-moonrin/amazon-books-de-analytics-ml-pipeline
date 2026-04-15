@@ -1,0 +1,19 @@
+{
+  "books_data": {
+    "raw_csv": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/raw/books_data.csv",
+    "bronze_full": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/bronze/books_data_full.parquet",
+    "silver_standardized": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/silver/books_data_silver.parquet",
+    "silver_quality_enriched": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/silver/books_data_silver_quality.parquet",
+    "silver_eligible": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/silver/books_data_silver_eligible.parquet",
+    "silver_quarantine": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/quarantine/books_data_quarantine.parquet",
+    "gold_books_serving_da": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/gold/books_serving_da.parquet"
+  },
+  "books_rating": {
+    "raw_csv": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/raw/books_rating.csv",
+    "bronze_full": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/bronze/books_rating_full.parquet",
+    "silver_standardized": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/silver/books_rating_silver.parquet",
+    "silver_quality_enriched": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/silver/books_rating_silver_quality.parquet",
+    "gold_reviews_serving_da": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/gold/reviews_serving_da.parquet",
+    "gold_reviews_serving_ds": "gs://asia-southeast1-amazon-book-6e65499b-bucket/data/gold/reviews_serving_ds.parquet"
+  }
+}

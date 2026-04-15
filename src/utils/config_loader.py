@@ -1,14 +1,26 @@
+import os
 from pathlib import Path
 
 from src.utils.job_runtime import load_json_file, resolve_path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CONFIG_PATH = PROJECT_ROOT / "config" / "data_assets.json"
+
+
+def get_pipeline_mode() -> str:
+    return os.getenv("PIPELINE_MODE", "local").strip().lower()
+
+
+def get_data_assets_config_path(project_root: Path = PROJECT_ROOT) -> Path:
+    raw_path = os.getenv("DATA_ASSETS_CONFIG_PATH")
+    if raw_path:
+        return resolve_path(project_root, raw_path)
+
+    mode = get_pipeline_mode()
+    return resolve_path(project_root, f"config/assets/{mode}.data_assets.json")
 
 
 def load_data_assets() -> dict:
-    return load_json_file(CONFIG_PATH)
+    return load_json_file(get_data_assets_config_path())
 
 
 def get_asset_path(dataset_name: str, asset_name: str) -> str:
