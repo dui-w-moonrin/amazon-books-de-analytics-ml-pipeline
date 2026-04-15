@@ -1,0 +1,44 @@
+{
+  "job_name": "books_data_bronze_dataproc",
+  "source_dataset": "books_data",
+  "source_asset": "raw_csv",
+  "output_dataset": "books_data",
+  "output_asset": "bronze_full",
+  "source_type": "csv",
+  "output_type": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 4,
+  "max_records_per_file": 200000,
+  "csv_options": {
+    "header": true,
+    "all_varchar": true,
+    "multiLine": true,
+    "quote": "\"",
+    "escape": "\"",
+    "mode": "PERMISSIVE",
+    "ignoreLeadingWhiteSpace": true,
+    "ignoreTrailingWhiteSpace": true,
+    "encoding": "UTF-8"
+  },
+  "columns": [
+    { "source": "Title", "target": "title" },
+    { "source": "description", "target": "description" },
+    { "source": "authors", "target": "authors" },
+    { "source": "image", "target": "image_url" },
+    { "source": "previewLink", "target": "preview_link" },
+    { "source": "publisher", "target": "publisher" },
+    { "source": "publishedDate", "target": "published_date_raw" },
+    { "source": "infoLink", "target": "info_link" },
+    { "source": "categories", "target": "categories" },
+    { "source": "ratingsCount", "target": "ratings_count_raw" }
+  ],
+  "spark": {
+    "app_name": "bronze-books-data-prod",
+    "shuffle_partitions": 32,
+    "default_parallelism": 16,
+    "max_partition_bytes": "134217728",
+    "parquet_block_size": "134217728",
+    "parquet_page_size": "1048576",
+    "compression": "snappy"
+  }
+}

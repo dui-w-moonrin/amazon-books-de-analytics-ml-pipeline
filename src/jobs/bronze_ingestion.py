@@ -4,7 +4,7 @@ from typing import Any
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
-from src.utils.config_loader import get_resolved_asset_path
+from src.utils.config_loader import get_asset_path
 from src.utils.job_runtime import resolve_path
 
 
@@ -12,16 +12,9 @@ class BronzeIngestionJob:
     """
     Ingest raw source data into the Bronze layer using PySpark.
 
-    Responsibilities:
-    - resolve source and output paths from config
-    - validate source schema against configured column mappings
-    - read raw CSV data with Spark
-    - rename and select configured columns
-    - write Bronze output as Parquet
-
-    Notes:
-    - Spark writes a parquet dataset directory, even if the output path ends with `.parquet`
-    - This implementation is tuned to reduce memory pressure for large text-heavy CSV inputs
+    Supports both:
+    - local filesystem paths
+    - gs:// GCS URIs
     """
 
     def __init__(
@@ -32,25 +25,29 @@ class BronzeIngestionJob:
         self.project_root = project_root
         self.config = config
 
+    def _is_gcs_uri(self, value: str) -> bool:
+        return isinstance(value, str) and value.startswith("gs://")
+
     def _resolve_asset_or_path(
         self,
         dataset_key_field: str,
         asset_key_field: str,
         fallback_path_field: str,
-    ) -> Path:
+    ) -> str:
         dataset_name = self.config.get(dataset_key_field)
         asset_name = self.config.get(asset_key_field)
 
         if dataset_name and asset_name:
-            return get_resolved_asset_path(
-                project_root=self.project_root,
-                dataset_name=dataset_name,
-                asset_name=asset_name,
-            )
+            raw_path = get_asset_path(dataset_name, asset_name)
+            if self._is_gcs_uri(raw_path):
+                return raw_path
+            return str(resolve_path(self.project_root, raw_path))
 
         raw_path = self.config.get(fallback_path_field)
         if raw_path:
-            return resolve_path(self.project_root, raw_path)
+            if self._is_gcs_uri(raw_path):
+                return raw_path
+            return str(resolve_path(self.project_root, raw_path))
 
         raise KeyError(
             f"Missing config keys: either "
@@ -58,14 +55,14 @@ class BronzeIngestionJob:
             f"or {fallback_path_field} must be provided."
         )
 
-    def _resolve_source_path(self) -> Path:
+    def _resolve_source_path(self) -> str:
         return self._resolve_asset_or_path(
             dataset_key_field="source_dataset",
             asset_key_field="source_asset",
             fallback_path_field="source_path",
         )
 
-    def _resolve_output_path(self) -> Path:
+    def _resolve_output_path(self) -> str:
         return self._resolve_asset_or_path(
             dataset_key_field="output_dataset",
             asset_key_field="output_asset",
@@ -173,7 +170,7 @@ class BronzeIngestionJob:
     def _read_source_dataframe(
         self,
         spark: SparkSession,
-        source_path: Path,
+        source_path: str,
     ) -> DataFrame:
         header = bool(self._get_csv_option("header", True))
         delimiter = self._get_csv_option("delimiter", ",")
@@ -205,11 +202,14 @@ class BronzeIngestionJob:
         )
 
         if bad_records_path:
-            bad_records_resolved = resolve_path(self.project_root, bad_records_path)
-            bad_records_resolved.parent.mkdir(parents=True, exist_ok=True)
-            reader = reader.option("badRecordsPath", str(bad_records_resolved))
+            if self._is_gcs_uri(bad_records_path):
+                reader = reader.option("badRecordsPath", bad_records_path)
+            else:
+                bad_records_resolved = resolve_path(self.project_root, bad_records_path)
+                bad_records_resolved.parent.mkdir(parents=True, exist_ok=True)
+                reader = reader.option("badRecordsPath", str(bad_records_resolved))
 
-        return reader.csv(str(source_path))
+        return reader.csv(source_path)
 
     def _validate_source_schema(self, actual_columns: list[str]) -> None:
         expected_columns = self._get_source_columns()
@@ -228,6 +228,11 @@ class BronzeIngestionJob:
 
         return df.selectExpr(*select_exprs)
 
+    def _ensure_local_output_parent(self, output_path: str) -> None:
+        if self._is_gcs_uri(output_path):
+            return
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
     def run(self) -> None:
         self._validate_job_config()
 
@@ -239,7 +244,7 @@ class BronzeIngestionJob:
         max_records_per_file = self._get_max_records_per_file()
         spark_conf = self._get_spark_conf()
 
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        self._ensure_local_output_parent(output_path)
 
         spark = self._build_spark()
 
@@ -270,7 +275,7 @@ class BronzeIngestionJob:
             if compression:
                 writer = writer.option("compression", compression)
 
-            writer.parquet(str(output_path))
+            writer.parquet(output_path)
 
             print("DONE")
             print(f"source_path={source_path}")
