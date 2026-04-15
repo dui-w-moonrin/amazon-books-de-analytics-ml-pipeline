@@ -18,19 +18,45 @@ def load_runtime_config() -> dict:
         )
 
     with open(config_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        cfg = json.load(f)
+
+    required_keys = [
+        "project_id",
+        "region",
+        "bucket_uri",
+        "code_bundle_uri",
+        "batch",
+    ]
+    missing = [k for k in required_keys if k not in cfg]
+    if missing:
+        raise ValueError(
+            f"Missing required keys in dataproc_runtime.json: {missing}. "
+            f"Found keys: {list(cfg.keys())}"
+        )
+
+    return cfg
 
 
 def build_gcs_uri(bucket_uri: str, relative_path: str) -> str:
     return f"{bucket_uri.rstrip('/')}/{relative_path.lstrip('/')}"
 
 
-def build_batch(runtime_cfg: dict, main_python_file_uri: str, args: list[str]) -> dict:
+def build_batch(
+    runtime_cfg: dict,
+    main_python_file_uri: str,
+    args: list[str],
+) -> dict:
+    pyspark_batch = {
+        "main_python_file_uri": main_python_file_uri,
+        "args": args,
+    }
+
+    code_bundle_uri = runtime_cfg.get("code_bundle_uri", "").strip()
+    if code_bundle_uri:
+        pyspark_batch["python_file_uris"] = [code_bundle_uri]
+
     batch = {
-        "pyspark_batch": {
-            "main_python_file_uri": main_python_file_uri,
-            "args": args,
-        },
+        "pyspark_batch": pyspark_batch,
         "runtime_config": {
             "version": runtime_cfg["batch"].get("runtime_version", "2.2"),
             "properties": runtime_cfg["batch"].get(
@@ -71,31 +97,31 @@ DATA_ASSETS_URI = build_gcs_uri(
 
 RUN_SILVER_JOB_URI = build_gcs_uri(
     BUCKET_URI,
-    "code/dataproc/run_silver_job_dataproc.py",
+    "code/scripts/dataproc/run_silver_job_dataproc.py",
 )
 RUN_SILVER_FILL_DEFAULTS_URI = build_gcs_uri(
     BUCKET_URI,
-    "code/dataproc/run_silver_fill_defaults_dataproc.py",
+    "code/scripts/dataproc/run_silver_fill_defaults_dataproc.py",
 )
 RUN_SILVER_QUALITY_JOB_URI = build_gcs_uri(
     BUCKET_URI,
-    "code/dataproc/run_silver_quality_job_dataproc.py",
+    "code/scripts/dataproc/run_silver_quality_job_dataproc.py",
 )
 RUN_SILVER_QUARANTINE_URI = build_gcs_uri(
     BUCKET_URI,
-    "code/dataproc/run_silver_quarantine_dataproc.py",
+    "code/scripts/dataproc/run_silver_quarantine_dataproc.py",
 )
 RUN_SILVER_DQ_CHECK_URI = build_gcs_uri(
     BUCKET_URI,
-    "code/dataproc/run_silver_data_quality_check_dataproc.py",
+    "code/scripts/dataproc/run_silver_data_quality_check_dataproc.py",
 )
 RUN_SILVER_REL_CHECK_URI = build_gcs_uri(
     BUCKET_URI,
-    "code/dataproc/run_silver_cross_check_relationship_dataproc.py",
+    "code/scripts/dataproc/run_silver_cross_check_relationship_dataproc.py",
 )
 RUN_DATASET_SNAPSHOT_URI = build_gcs_uri(
     BUCKET_URI,
-    "code/dataproc/run_dataset_snapshot_dataproc.py",
+    "code/scripts/dataproc/run_dataset_snapshot_dataproc.py",
 )
 
 BOOKS_DATA_SILVER_CONFIG_URI = build_gcs_uri(
@@ -340,9 +366,7 @@ with DAG(
 
     standardize_books_data >> fill_defaults_books_data >> quality_enrich_books_data >> quarantine_books_data
     quarantine_books_data >> books_data_completeness_check >> books_data_silver_snapshot
-
     books_data_silver_snapshot >> standardize_books_rating
     standardize_books_rating >> fill_defaults_books_rating >> quality_enrich_books_rating
     quality_enrich_books_rating >> books_rating_completeness_check >> books_rating_silver_snapshot
-
     books_rating_silver_snapshot >> validate_review_to_book_relationship

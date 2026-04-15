@@ -2,6 +2,7 @@
   "project_id": "amazon-books-de-pipeline",
   "region": "asia-southeast1",
   "bucket_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket",
+  "code_bundle_uri": "gs://asia-southeast1-amazon-book-6e65499b-bucket/code/amazon_books_code_bundle.zip",
   "batch": {
     "runtime_version": "2.2",
     "service_account": "994096182929-compute@developer.gserviceaccount.com",
