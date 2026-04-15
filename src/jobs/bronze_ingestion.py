@@ -176,19 +176,40 @@ class BronzeIngestionJob:
         source_path: Path,
     ) -> DataFrame:
         header = bool(self._get_csv_option("header", True))
+        delimiter = self._get_csv_option("delimiter", ",")
+        encoding = self._get_csv_option("encoding", "UTF-8")
+        multiline = bool(self._get_csv_option("multiLine", True))
+        quote = self._get_csv_option("quote", '"')
+        escape = self._get_csv_option("escape", '"')
+        mode = self._get_csv_option("mode", "PERMISSIVE")
+        ignore_leading_whitespace = bool(
+            self._get_csv_option("ignoreLeadingWhiteSpace", True)
+        )
+        ignore_trailing_whitespace = bool(
+            self._get_csv_option("ignoreTrailingWhiteSpace", True)
+        )
+        bad_records_path = self._get_csv_option("badRecordsPath", None)
 
-        df = (
+        reader = (
             spark.read
             .option("header", header)
             .option("inferSchema", False)
-            .option("multiLine", True)
-            .option("quote", '"')
-            .option("escape", "\\")
-            .option("mode", "PERMISSIVE")
-            .csv(str(source_path))
+            .option("delimiter", delimiter)
+            .option("encoding", encoding)
+            .option("multiLine", multiline)
+            .option("quote", quote)
+            .option("escape", escape)
+            .option("mode", mode)
+            .option("ignoreLeadingWhiteSpace", ignore_leading_whitespace)
+            .option("ignoreTrailingWhiteSpace", ignore_trailing_whitespace)
         )
 
-        return df
+        if bad_records_path:
+            bad_records_resolved = resolve_path(self.project_root, bad_records_path)
+            bad_records_resolved.parent.mkdir(parents=True, exist_ok=True)
+            reader = reader.option("badRecordsPath", str(bad_records_resolved))
+
+        return reader.csv(str(source_path))
 
     def _validate_source_schema(self, actual_columns: list[str]) -> None:
         expected_columns = self._get_source_columns()
@@ -218,48 +239,18 @@ class BronzeIngestionJob:
         max_records_per_file = self._get_max_records_per_file()
         spark_conf = self._get_spark_conf()
 
-        print("DEBUG START")
-        print(f"job_name={self.config.get('job_name')}")
-        print(f"project_root={self.project_root}")
-        print(f"source_path={source_path}")
-        print(f"output_path={output_path}")
-        print(f"source_path_exists={source_path.exists()}")
-        print(f"source_path_parent={source_path.parent}")
-        print(f"source_path_name={source_path.name}")
-        print(f"output_path_parent={output_path.parent}")
-        print(f"output_path_name={output_path.name}")
-        print(f"write_mode={write_mode}")
-        print(f"write_partitions={write_partitions}")
-        print(f"max_records_per_file={max_records_per_file}")
-        print(f"spark_conf={spark_conf}")
-        print("DEBUG END")
-
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         spark = self._build_spark()
 
         try:
-            print("DEBUG BEFORE READ CSV")
             df = self._read_source_dataframe(spark, source_path)
 
             actual_columns = df.columns
-            expected_columns = self._get_source_columns()
-
-            print(f"actual_columns={actual_columns}")
-            print(f"expected_columns={expected_columns}")
-
             self._validate_source_schema(actual_columns)
 
-            print("DEBUG BEFORE SELECT/RENAME")
             selected_df = self._build_selected_dataframe(df)
-
-            print("DEBUG BEFORE COALESCE")
-            print(f"coalesce_partitions={write_partitions}")
-
             output_df = selected_df.coalesce(write_partitions)
-
-            print("DEBUG BEFORE WRITE PARQUET")
-            print(f"write_output_path={output_path}")
 
             writer = (
                 output_df.write

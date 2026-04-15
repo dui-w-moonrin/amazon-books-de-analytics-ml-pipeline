@@ -1,12 +1,20 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.jobs.bronze_ingestion import BronzeIngestionJob
+os.environ.setdefault("PIPELINE_MODE", "local")
+os.environ.setdefault("PIPELINE_CONFIG_ROOT", "config/local")
+os.environ.setdefault(
+    "DATA_ASSETS_CONFIG_PATH",
+    "config/assets/local.data_assets.json",
+)
+
+from src.jobs.silver_quality_enrich import SilverQualityEnrichJob
 from src.utils.job_runtime import (
     load_json_file,
     load_simple_env,
@@ -16,7 +24,7 @@ from src.utils.job_runtime import (
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Run bronze ingestion job from config"
+        description="Run silver quality enrichment job from config"
     )
     parser.add_argument(
         "--config",
@@ -33,7 +41,7 @@ def main() -> None:
     config_path = resolve_config_path(PROJECT_ROOT, args.config)
     config = load_json_file(config_path)
 
-    job = BronzeIngestionJob(
+    job = SilverQualityEnrichJob(
         project_root=PROJECT_ROOT,
         config=config,
     )

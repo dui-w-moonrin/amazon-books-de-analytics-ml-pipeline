@@ -10,7 +10,14 @@
   "write_partitions": 4,
   "csv_options": {
     "header": true,
-    "all_varchar": true
+    "all_varchar": true,
+    "multiLine": true,
+    "quote": "\"",
+    "escape": "\"",
+    "mode": "PERMISSIVE",
+    "ignoreLeadingWhiteSpace": true,
+    "ignoreTrailingWhiteSpace": true,
+    "encoding": "UTF-8"
   },
   "columns": [
     { "source": "Title", "target": "title" },
