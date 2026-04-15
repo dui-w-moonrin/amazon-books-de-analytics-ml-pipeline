@@ -3,7 +3,9 @@ from datetime import datetime
 from pathlib import Path
 
 from airflow import DAG
-from airflow.providers.google.cloud.operators.dataproc import DataprocCreateBatchOperator
+from airflow.providers.google.cloud.operators.dataproc import (
+    DataprocCreateBatchOperator,
+)
 
 
 def load_runtime_config() -> dict:
@@ -38,11 +40,19 @@ def build_batch(runtime_cfg: dict, main_python_file_uri: str, args: list[str]) -
     }
 
     service_account = runtime_cfg["batch"].get("service_account", "").strip()
+    subnetwork_uri = runtime_cfg["batch"].get("subnetwork_uri", "").strip()
+
+    execution_config = {}
+
     if service_account:
+        execution_config["service_account"] = service_account
+
+    if subnetwork_uri:
+        execution_config["subnetwork_uri"] = subnetwork_uri
+
+    if execution_config:
         batch["environment_config"] = {
-            "execution_config": {
-                "service_account": service_account
-            }
+            "execution_config": execution_config
         }
 
     return batch
@@ -62,6 +72,10 @@ DATA_ASSETS_URI = build_gcs_uri(
 RUN_SILVER_JOB_URI = build_gcs_uri(
     BUCKET_URI,
     "code/dataproc/run_silver_job_dataproc.py",
+)
+RUN_SILVER_FILL_DEFAULTS_URI = build_gcs_uri(
+    BUCKET_URI,
+    "code/dataproc/run_silver_fill_defaults_dataproc.py",
 )
 RUN_SILVER_QUALITY_JOB_URI = build_gcs_uri(
     BUCKET_URI,
@@ -91,6 +105,14 @@ BOOKS_DATA_SILVER_CONFIG_URI = build_gcs_uri(
 BOOKS_RATING_SILVER_CONFIG_URI = build_gcs_uri(
     BUCKET_URI,
     "config/dataproc/silver/books_rating_silver.json",
+)
+BOOKS_DATA_FILL_DEFAULTS_CONFIG_URI = build_gcs_uri(
+    BUCKET_URI,
+    "config/dataproc/fill_defaults/books_data_fill_defaults.json",
+)
+BOOKS_RATING_FILL_DEFAULTS_CONFIG_URI = build_gcs_uri(
+    BUCKET_URI,
+    "config/dataproc/fill_defaults/books_rating_fill_defaults.json",
 )
 BOOKS_DATA_QUALITY_CONFIG_URI = build_gcs_uri(
     BUCKET_URI,
@@ -141,6 +163,21 @@ with DAG(
             ],
         ),
         batch_id="silver-std-books-data-{{ ds_nodash }}-{{ ti.try_number }}",
+    )
+
+    fill_defaults_books_data = DataprocCreateBatchOperator(
+        task_id="fill_defaults_books_data",
+        project_id=PROJECT_ID,
+        region=REGION,
+        batch=build_batch(
+            cfg,
+            RUN_SILVER_FILL_DEFAULTS_URI,
+            [
+                "--config", BOOKS_DATA_FILL_DEFAULTS_CONFIG_URI,
+                "--data-assets-path", DATA_ASSETS_URI,
+            ],
+        ),
+        batch_id="silver-fill-books-data-{{ ds_nodash }}-{{ ti.try_number }}",
     )
 
     quality_enrich_books_data = DataprocCreateBatchOperator(
@@ -222,6 +259,21 @@ with DAG(
         batch_id="silver-std-books-rating-{{ ds_nodash }}-{{ ti.try_number }}",
     )
 
+    fill_defaults_books_rating = DataprocCreateBatchOperator(
+        task_id="fill_defaults_books_rating",
+        project_id=PROJECT_ID,
+        region=REGION,
+        batch=build_batch(
+            cfg,
+            RUN_SILVER_FILL_DEFAULTS_URI,
+            [
+                "--config", BOOKS_RATING_FILL_DEFAULTS_CONFIG_URI,
+                "--data-assets-path", DATA_ASSETS_URI,
+            ],
+        ),
+        batch_id="silver-fill-books-rating-{{ ds_nodash }}-{{ ti.try_number }}",
+    )
+
     quality_enrich_books_rating = DataprocCreateBatchOperator(
         task_id="quality_enrich_books_rating",
         project_id=PROJECT_ID,
@@ -285,10 +337,12 @@ with DAG(
         ),
         batch_id="silver-rel-books-{{ ds_nodash }}-{{ ti.try_number }}",
     )
-    # avoid quota limit issues by not running book_data and books_rating tasks in parallel
-    standardize_books_data >> quality_enrich_books_data >> quarantine_books_data
+
+    standardize_books_data >> fill_defaults_books_data >> quality_enrich_books_data >> quarantine_books_data
     quarantine_books_data >> books_data_completeness_check >> books_data_silver_snapshot
+
     books_data_silver_snapshot >> standardize_books_rating
-    standardize_books_rating >> quality_enrich_books_rating
+    standardize_books_rating >> fill_defaults_books_rating >> quality_enrich_books_rating
     quality_enrich_books_rating >> books_rating_completeness_check >> books_rating_silver_snapshot
+
     books_rating_silver_snapshot >> validate_review_to_book_relationship

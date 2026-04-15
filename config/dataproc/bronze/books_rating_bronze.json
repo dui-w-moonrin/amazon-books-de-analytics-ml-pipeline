@@ -1,21 +1,56 @@
 {
-  "job_name": "books_rating_bronze",
   "dataset_name": "books_rating",
   "source_asset": "raw_csv",
   "output_asset": "bronze_full",
-  "data_assets_path": "gs://asia-southeast1-amazon-book-6e65499b-bucket/config/assets/dataproc.data_assets.json",
   "output_write_mode": "overwrite",
   "write_partitions": 1,
   "columns": [
-    { "source": "Id", "target": "id" },
-    { "source": "Title", "target": "title" },
-    { "source": "Price", "target": "price_raw" },
-    { "source": "User_id", "target": "user_id" },
-    { "source": "profileName", "target": "profile_name" },
-    { "source": "review/helpfulness", "target": "review_helpfulness" },
-    { "source": "review/score", "target": "review_score_raw" },
-    { "source": "review/time", "target": "review_time_raw" },
-    { "source": "review/summary", "target": "review_summary" },
-    { "source": "review/text", "target": "review_text" }
-  ]
+    {
+      "source": "Id",
+      "target": "book_source_id"
+    },
+    {
+      "source": "Title",
+      "target": "title"
+    },
+    {
+      "source": "Price",
+      "target": "price"
+    },
+    {
+      "source": "User_id",
+      "target": "user_id"
+    },
+    {
+      "source": "profileName",
+      "target": "profile_name"
+    },
+    {
+      "source": "review/helpfulness",
+      "target": "review_helpfulness"
+    },
+    {
+      "source": "review/score",
+      "target": "review_score"
+    },
+    {
+      "source": "review/time",
+      "target": "review_time"
+    },
+    {
+      "source": "review/summary",
+      "target": "review_summary"
+    },
+    {
+      "source": "review/text",
+      "target": "review_text"
+    }
+  ],
+  "spark": {
+    "app_name": "bronze-books-rating-prod",
+    "shuffle_partitions": 8,
+    "default_parallelism": 4,
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
+  }
 }

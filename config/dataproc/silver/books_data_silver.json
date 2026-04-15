@@ -1,0 +1,96 @@
+{
+  "dataset_name": "books_data",
+  "input_asset": "bronze_full",
+  "output_asset": "silver_standardized",
+  "input_format": "parquet",
+  "output_format": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 4,
+  
+  "output_mode": "select_targets_only",
+  "passthrough_columns": [],
+  "drop_columns_after_transform": [],
+  "column_rules": [
+    {
+      "source": "title",
+      "target": "title",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "title",
+      "target": "title_key",
+      "target_type": "string",
+      "trim": true,
+      "collapse_spaces": true,
+      "blank_to_null": true,
+      "lower": true
+    },
+    {
+      "source": "description",
+      "target": "description",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "authors",
+      "target": "authors",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "image_url",
+      "target": "image_url",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "preview_link",
+      "target": "preview_link",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "publisher",
+      "target": "publisher",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "published_date_raw",
+      "target": "published_date",
+      "target_type": "date",
+      "trim": true,
+      "blank_to_null": true,
+      "parse_mode": "multi_format_date"
+    },
+    {
+      "source": "info_link",
+      "target": "info_link",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "categories",
+      "target": "categories",
+      "target_type": "string",
+      "trim": true,
+      "blank_to_null": true
+    },
+    {
+      "source": "ratings_count_raw",
+      "target": "ratings_count",
+      "target_type": "int",
+      "trim": true,
+      "blank_to_null": true,
+      "cast_via": "double"
+    }
+  ]
+}
