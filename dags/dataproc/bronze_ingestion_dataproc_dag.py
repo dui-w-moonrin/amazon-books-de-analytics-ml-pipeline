@@ -5,45 +5,66 @@ from pathlib import Path
 from airflow import DAG
 from airflow.providers.google.cloud.operators.dataproc import DataprocCreateBatchOperator
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-RUNTIME_CONFIG_PATH = PROJECT_ROOT / "config" / "dataproc" / "dataproc_runtime.json"
-RUNTIME = json.loads(RUNTIME_CONFIG_PATH.read_text(encoding="utf-8"))
+
+def load_runtime_config() -> dict:
+    repo_root = Path(__file__).resolve().parents[2]
+    config_path = repo_root / "config" / "dataproc" / "dataproc_runtime.json"
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+
+    required_keys = ["project_id", "region", "gcs", "batch"]
+    missing = [k for k in required_keys if k not in cfg]
+    if missing:
+        raise ValueError(
+            f"Missing required keys in dataproc_runtime.json: {missing}. "
+            f"Found keys: {list(cfg.keys())}"
+        )
+
+    required_gcs_keys = [
+        "bronze_entrypoint_uri",
+        "snapshot_entrypoint_uri",
+        "data_assets_uri",
+        "books_data_bronze_config_uri",
+        "books_rating_bronze_config_uri",
+    ]
+    missing_gcs = [k for k in required_gcs_keys if k not in cfg["gcs"]]
+    if missing_gcs:
+        raise ValueError(
+            f"Missing required keys in dataproc_runtime.json.gcs: {missing_gcs}"
+        )
+
+    return cfg
 
 
-def build_batch(job_key: str, label_suffix: str) -> dict:
-    pyspark_batch = {
-        "main_python_file_uri": RUNTIME["main_python_uri"],
-        "args": [
-            "--config-uri",
-            RUNTIME["jobs"][job_key],
-            "--assets-config-uri",
-            RUNTIME["assets_config_uri"]
-        ]
-    }
-
-    python_file_uris = RUNTIME.get("python_file_uris", [])
-    if python_file_uris:
-        pyspark_batch["python_file_uris"] = python_file_uris
-
+def build_batch(
+    runtime_cfg: dict,
+    main_python_file_uri: str,
+    args: list[str],
+) -> dict:
     batch = {
-        "pyspark_batch": pyspark_batch,
-        "runtime_config": {
-            "version": RUNTIME.get("runtime_version", "2.2"),
-            "properties": RUNTIME.get("spark_properties", {})
+        "pyspark_batch": {
+            "main_python_file_uri": main_python_file_uri,
+            "args": args,
         },
-        "labels": {
-            "pipeline": "amazon-books",
-            "layer": "bronze",
-            "job": label_suffix,
-            "env": "prod"
-        }
+        "runtime_config": {
+            "version": runtime_cfg["batch"].get("runtime_version", "2.2"),
+            "properties": runtime_cfg["batch"].get(
+                "default_dataproc_properties", {}
+            ),
+        },
     }
+
+    service_account = runtime_cfg["batch"].get("service_account", "").strip()
+    subnetwork_uri = runtime_cfg["batch"].get("subnetwork_uri", "").strip()
 
     execution_config = {}
-    if RUNTIME.get("service_account"):
-        execution_config["service_account"] = RUNTIME["service_account"]
-    if RUNTIME.get("subnetwork_uri"):
-        execution_config["subnetwork_uri"] = RUNTIME["subnetwork_uri"]
+
+    if service_account:
+        execution_config["service_account"] = service_account
+
+    if subnetwork_uri:
+        execution_config["subnetwork_uri"] = subnetwork_uri
 
     if execution_config:
         batch["environment_config"] = {
@@ -53,27 +74,100 @@ def build_batch(job_key: str, label_suffix: str) -> dict:
     return batch
 
 
+cfg = load_runtime_config()
+
+PROJECT_ID = cfg["project_id"]
+REGION = cfg["region"]
+
+BRONZE_ENTRYPOINT_URI = cfg["gcs"]["bronze_entrypoint_uri"]
+SNAPSHOT_ENTRYPOINT_URI = cfg["gcs"]["snapshot_entrypoint_uri"]
+DATA_ASSETS_URI = cfg["gcs"]["data_assets_uri"]
+
+BOOKS_DATA_BRONZE_CONFIG_URI = cfg["gcs"]["books_data_bronze_config_uri"]
+BOOKS_RATING_BRONZE_CONFIG_URI = cfg["gcs"]["books_rating_bronze_config_uri"]
+
+
 with DAG(
     dag_id="bronze_ingestion_dataproc",
-    start_date=datetime(2026, 4, 15),
+    start_date=datetime(2026, 4, 9),
     schedule=None,
     catchup=False,
-    tags=["amazon-books", "bronze", "dataproc", "prod"],
-    description="Production Bronze ingestion DAG using Dataproc batch",
+    tags=["amazon-books", "bronze", "dataproc"],
 ) as dag:
 
     ingest_books_data = DataprocCreateBatchOperator(
         task_id="ingest_books_data",
-        project_id=RUNTIME["project_id"],
-        region=RUNTIME["region"],
-        batch=build_batch("books_data", "books-data"),
-        batch_id="bronze-books-data-{{ ts_nodash | lower }}",
+        project_id=PROJECT_ID,
+        region=REGION,
+        batch=build_batch(
+            runtime_cfg=cfg,
+            main_python_file_uri=BRONZE_ENTRYPOINT_URI,
+            args=[BOOKS_DATA_BRONZE_CONFIG_URI],
+        ),
+        batch_id="bronze-books-data-{{ ds_nodash }}-{{ ti.try_number }}",
     )
 
     ingest_books_rating = DataprocCreateBatchOperator(
         task_id="ingest_books_rating",
-        project_id=RUNTIME["project_id"],
-        region=RUNTIME["region"],
-        batch=build_batch("books_rating", "books-rating"),
-        batch_id="bronze-books-rating-{{ ts_nodash | lower }}",
+        project_id=PROJECT_ID,
+        region=REGION,
+        batch=build_batch(
+            runtime_cfg=cfg,
+            main_python_file_uri=BRONZE_ENTRYPOINT_URI,
+            args=[BOOKS_RATING_BRONZE_CONFIG_URI],
+        ),
+        batch_id="bronze-books-rating-{{ ds_nodash }}-{{ ti.try_number }}",
     )
+
+    snapshot_bronze_books_data = DataprocCreateBatchOperator(
+        task_id="snapshot_bronze_books_data",
+        project_id=PROJECT_ID,
+        region=REGION,
+        batch=build_batch(
+            runtime_cfg=cfg,
+            main_python_file_uri=SNAPSHOT_ENTRYPOINT_URI,
+            args=[
+                "--data-assets",
+                DATA_ASSETS_URI,
+                "--dataset",
+                "books_data",
+                "--asset",
+                "bronze_full",
+                "--stage",
+                "bronze",
+                "--input-format",
+                "parquet",
+                "--sample-rows",
+                "5",
+            ],
+        ),
+        batch_id="snapshot-bronze-books-data-{{ ds_nodash }}-{{ ti.try_number }}",
+    )
+
+    snapshot_bronze_books_rating = DataprocCreateBatchOperator(
+        task_id="snapshot_bronze_books_rating",
+        project_id=PROJECT_ID,
+        region=REGION,
+        batch=build_batch(
+            runtime_cfg=cfg,
+            main_python_file_uri=SNAPSHOT_ENTRYPOINT_URI,
+            args=[
+                "--data-assets",
+                DATA_ASSETS_URI,
+                "--dataset",
+                "books_rating",
+                "--asset",
+                "bronze_full",
+                "--stage",
+                "bronze",
+                "--input-format",
+                "parquet",
+                "--sample-rows",
+                "5",
+            ],
+        ),
+        batch_id="snapshot-bronze-books-rating-{{ ds_nodash }}-{{ ti.try_number }}",
+    )
+
+    ingest_books_data >> snapshot_bronze_books_data
+    ingest_books_rating >> snapshot_bronze_books_rating

@@ -1,59 +1,100 @@
-import argparse
-import os
+import json
+import sys
 import tempfile
-from pathlib import Path
-from urllib.parse import urlparse
+from typing import Any
 
-from google.cloud import storage
-
-from src.jobs.bronze_ingestion import BronzeIngestionJob
-from src.utils.job_runtime import load_json_file
+from pyspark.sql import SparkSession
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Dataproc entrypoint for Bronze ingestion"
-    )
-    parser.add_argument("--config-uri", required=True)
-    parser.add_argument("--assets-config-uri", required=True)
-    return parser.parse_args()
+def load_json_from_path(path: str) -> dict[str, Any]:
+    if path.startswith("gs://"):
+        from google.cloud import storage
+
+        parts = path.replace("gs://", "", 1).split("/", 1)
+        bucket_name = parts[0]
+        blob_path = parts[1]
+
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(blob_path)
+
+        with tempfile.NamedTemporaryFile(mode="w+b", delete=True) as tmp:
+            blob.download_to_filename(tmp.name)
+            with open(tmp.name, "r", encoding="utf-8") as f:
+                return json.load(f)
+
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
-def download_gcs_uri_to_temp(gcs_uri: str, suffix: str = ".json") -> Path:
-    if not gcs_uri.startswith("gs://"):
-        raise ValueError(f"Expected gs:// URI, got: {gcs_uri}")
-
-    parsed = urlparse(gcs_uri)
-    bucket_name = parsed.netloc
-    blob_name = parsed.path.lstrip("/")
-
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-
-    fd, temp_path = tempfile.mkstemp(suffix=suffix)
-    os.close(fd)
-
-    blob.download_to_filename(temp_path)
-    return Path(temp_path)
+def build_spark(app_name: str) -> SparkSession:
+    return SparkSession.builder.appName(app_name).getOrCreate()
 
 
 def main() -> None:
-    args = parse_args()
+    if len(sys.argv) < 2:
+        raise ValueError("Usage: python bronze_entrypoint.py <config_path>")
 
-    local_job_config = download_gcs_uri_to_temp(args.config_uri)
-    local_assets_config = download_gcs_uri_to_temp(args.assets_config_uri)
+    config_path = sys.argv[1]
+    config = load_json_from_path(config_path)
 
-    os.environ["PIPELINE_MODE"] = "dataproc"
-    os.environ["DATA_ASSETS_CONFIG_PATH"] = str(local_assets_config)
+    app_name = config.get("job_name", "bronze-dataproc")
+    source_path = config["source_path"]
+    output_path = config["output_path"]
+    write_partitions = int(config.get("write_partitions", 1))
+    write_mode = config.get("output_write_mode", "overwrite")
 
-    config = load_json_file(local_job_config)
+    spark = build_spark(app_name)
 
-    job = BronzeIngestionJob(
-        project_root=Path.cwd(),
-        config=config,
-    )
-    job.run()
+    try:
+        print("DEBUG START")
+        print(f"config_path={config_path}")
+        print(f"source_path={source_path}")
+        print(f"output_path={output_path}")
+        print(f"write_partitions={write_partitions}")
+        print(f"write_mode={write_mode}")
+        print("DEBUG END")
+
+        df = (
+            spark.read
+            .option("header", True)
+            .option("inferSchema", False)
+            .option("multiLine", True)
+            .option("quote", '"')
+            .option("escape", "\\")
+            .option("mode", "PERMISSIVE")
+            .csv(source_path)
+        )
+
+        actual_columns = df.columns
+        expected_columns = [col["source"] for col in config["columns"]]
+        missing = [col for col in expected_columns if col not in actual_columns]
+
+        print(f"actual_columns={actual_columns}")
+        print(f"expected_columns={expected_columns}")
+
+        if missing:
+            raise ValueError(f"Missing source columns: {missing}")
+
+        select_exprs = [
+            f"`{col['source']}` AS `{col['target']}`"
+            for col in config["columns"]
+        ]
+
+        output_df = df.selectExpr(*select_exprs).coalesce(write_partitions)
+
+        (
+            output_df.write
+            .mode(write_mode)
+            .parquet(output_path)
+        )
+
+        print("DONE")
+        print(f"source_path={source_path}")
+        print(f"output_path={output_path}")
+
+    finally:
+        spark.stop()
 
 
 if __name__ == "__main__":
