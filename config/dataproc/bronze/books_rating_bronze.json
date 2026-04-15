@@ -1,25 +1,11 @@
 {
-  "job_name": "books_rating_bronze_dataproc",
-  "source_dataset": "books_rating",
+  "job_name": "books_rating_bronze",
+  "dataset_name": "books_rating",
   "source_asset": "raw_csv",
-  "output_dataset": "books_rating",
   "output_asset": "bronze_full",
-  "source_type": "csv",
-  "output_type": "parquet",
+  "data_assets_path": "gs://asia-southeast1-amazon-book-6e65499b-bucket/config/assets/dataproc.data_assets.json",
   "output_write_mode": "overwrite",
-  "write_partitions": 8,
-  "max_records_per_file": 250000,
-  "csv_options": {
-    "header": true,
-    "all_varchar": true,
-    "multiLine": true,
-    "quote": "\"",
-    "escape": "\"",
-    "mode": "PERMISSIVE",
-    "ignoreLeadingWhiteSpace": true,
-    "ignoreTrailingWhiteSpace": true,
-    "encoding": "UTF-8"
-  },
+  "write_partitions": 1,
   "columns": [
     { "source": "Id", "target": "id" },
     { "source": "Title", "target": "title" },
@@ -31,14 +17,5 @@
     { "source": "review/time", "target": "review_time_raw" },
     { "source": "review/summary", "target": "review_summary" },
     { "source": "review/text", "target": "review_text" }
-  ],
-  "spark": {
-    "app_name": "bronze-books-rating-prod",
-    "shuffle_partitions": 64,
-    "default_parallelism": 32,
-    "max_partition_bytes": "134217728",
-    "parquet_block_size": "134217728",
-    "parquet_page_size": "1048576",
-    "compression": "snappy"
-  }
+  ]
 }

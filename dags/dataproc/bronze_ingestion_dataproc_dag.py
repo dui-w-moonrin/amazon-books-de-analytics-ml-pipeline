@@ -7,8 +7,20 @@ from airflow.providers.google.cloud.operators.dataproc import DataprocCreateBatc
 
 
 def load_runtime_config() -> dict:
-    repo_root = Path(__file__).resolve().parents[2]
-    config_path = repo_root / "config" / "dataproc" / "dataproc_runtime.json"
+    """
+    Load Dataproc runtime config from a path relative to this DAG file.
+
+    Expected layout in Composer:
+      /home/airflow/gcs/dags/dataproc/bronze_ingestion_dataproc_dag.py
+      /home/airflow/gcs/dags/dataproc/config/dataproc_runtime.json
+    """
+    dag_dir = Path(__file__).resolve().parent
+    config_path = dag_dir / "config" / "dataproc_runtime.json"
+
+    if not config_path.exists():
+        raise FileNotFoundError(
+            f"dataproc_runtime.json not found at: {config_path}"
+        )
 
     with open(config_path, "r", encoding="utf-8") as f:
         cfg = json.load(f)
