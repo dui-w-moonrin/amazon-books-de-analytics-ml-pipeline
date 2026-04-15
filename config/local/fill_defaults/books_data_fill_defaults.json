@@ -1,0 +1,30 @@
+{
+  "dataset_name": "books_data",
+  "input_asset": "silver_standardized",
+  "output_asset": "silver_defaults_filled",
+  "output_format": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 4,
+  "fill_rules": [
+    {
+      "column": "authors",
+      "value": "Unknown"
+    },
+    {
+      "column": "publisher",
+      "value": "Unknown"
+    },
+    {
+      "column": "categories",
+      "value": "Uncategorized"
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "silver-fill-defaults-books-data",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}

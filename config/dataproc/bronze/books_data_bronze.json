@@ -1,0 +1,56 @@
+{
+  "dataset_name": "books_data",
+  "source_asset": "raw_csv",
+  "output_asset": "bronze_full",
+  "output_write_mode": "overwrite",
+  "write_partitions": 1,
+  "columns": [
+    {
+      "source": "Title",
+      "target": "title"
+    },
+    {
+      "source": "description",
+      "target": "description"
+    },
+    {
+      "source": "authors",
+      "target": "authors"
+    },
+    {
+      "source": "image",
+      "target": "image_url"
+    },
+    {
+      "source": "previewLink",
+      "target": "preview_link"
+    },
+    {
+      "source": "publisher",
+      "target": "publisher"
+    },
+    {
+      "source": "publishedDate",
+      "target": "published_date_raw"
+    },
+    {
+      "source": "infoLink",
+      "target": "info_link"
+    },
+    {
+      "source": "categories",
+      "target": "categories"
+    },
+    {
+      "source": "ratingsCount",
+      "target": "ratings_count_raw"
+    }
+  ],
+  "spark": {
+    "app_name": "bronze-books-data-prod",
+    "shuffle_partitions": 8,
+    "default_parallelism": 4,
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
+  }
+}

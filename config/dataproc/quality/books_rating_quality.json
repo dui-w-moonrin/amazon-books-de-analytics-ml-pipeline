@@ -5,7 +5,7 @@
   "input_format": "parquet",
   "output_format": "parquet",
   "output_write_mode": "overwrite",
-  "write_partitions": 32,
+  "write_partitions": 16,
   "hash_rules": [
     {
       "source": "title_key",
@@ -32,11 +32,10 @@
   ],
   "score_rules": [],
   "spark": {
-    "master": "local[1]",
-    "app_name": "silver-quality-books-rating",
-    "driver_memory": "4g",
+    "app_name": "silver-quality-books-rating-prod",
     "shuffle_partitions": 8,
-    "default_parallelism": 2,
-    "max_partition_bytes": "16m"
+    "default_parallelism": "4",
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
   }
 }

@@ -1,0 +1,26 @@
+{
+  "dataset_name": "books_rating",
+  "input_asset": "silver_standardized",
+  "output_asset": "silver_defaults_filled",
+  "input_format": "parquet",
+  "output_format": "parquet",
+  "output_write_mode": "overwrite",
+  "write_partitions": 16,
+  "fill_rules": [
+    {
+      "column": "user_id",
+      "value": "anonymous_user"
+    },
+    {
+      "column": "profile_name",
+      "value": "Anonymous"
+    }
+  ],
+  "spark": {
+    "app_name": "silver-fill-defaults-books-rating-prod",
+    "shuffle_partitions": 8,
+    "default_parallelism": 4,
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
+  }
+}
