@@ -38,7 +38,14 @@ def patch_job_create_spark_session(job_cls, fallback_prefix: str):
             f"{fallback_prefix}-{dataset_name}",
         )
 
-        builder = SparkSession.builder.appName(app_name)
+        builder = (
+            SparkSession.builder
+            .appName(app_name)
+            .config("spark.sql.parquet.datetimeRebaseModeInWrite", "LEGACY")
+            .config("spark.sql.parquet.datetimeRebaseModeInRead", "LEGACY")
+            .config("spark.sql.parquet.int96RebaseModeInWrite", "LEGACY")
+            .config("spark.sql.parquet.int96RebaseModeInRead", "LEGACY")
+        )
 
         driver_memory = spark_config.get("driver_memory")
         if driver_memory:
