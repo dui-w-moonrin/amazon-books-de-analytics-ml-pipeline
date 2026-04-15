@@ -28,6 +28,14 @@ with DAG(
         ),
     )
 
+    fill_defaults_books_data = BashOperator(
+        task_id="fill_defaults_books_data",
+        bash_command=build_command(
+            "python scripts/local/run_silver_fill_defaults.py "
+            "--config config/local/fill_defaults/books_data_fill_defaults.json"
+        ),
+    )
+
     quality_enrich_books_data = BashOperator(
         task_id="quality_enrich_books_data",
         bash_command=build_command(
@@ -75,6 +83,14 @@ with DAG(
         ),
     )
 
+    fill_defaults_books_rating = BashOperator(
+        task_id="fill_defaults_books_rating",
+        bash_command=build_command(
+            "python scripts/local/run_silver_fill_defaults.py "
+            "--config config/local/fill_defaults/books_rating_fill_defaults.json"
+        ),
+    )
+
     quality_enrich_books_rating = BashOperator(
         task_id="quality_enrich_books_rating",
         bash_command=build_command(
@@ -117,10 +133,10 @@ with DAG(
     # -----------------------------
     # dependencies
     # -----------------------------
-    standardize_books_data >> quality_enrich_books_data >> quarantine_books_data
+    standardize_books_data >> fill_defaults_books_data >> quality_enrich_books_data >> quarantine_books_data
     quarantine_books_data >> books_data_completeness_check >> books_data_silver_snapshot
 
-    standardize_books_rating >> quality_enrich_books_rating
+    standardize_books_rating >> fill_defaults_books_rating >> quality_enrich_books_rating
     quality_enrich_books_rating >> books_rating_completeness_check >> books_rating_silver_snapshot
 
     [books_data_silver_snapshot, books_rating_silver_snapshot] >> validate_review_to_book_relationship

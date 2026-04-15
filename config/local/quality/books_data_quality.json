@@ -1,6 +1,6 @@
 {
   "dataset_name": "books_data",
-  "input_asset": "silver_standardized",
+  "input_asset": "silver_defaults_filled",
   "output_asset": "silver_quality_enriched",
   "input_format": "parquet",
   "output_format": "parquet",
