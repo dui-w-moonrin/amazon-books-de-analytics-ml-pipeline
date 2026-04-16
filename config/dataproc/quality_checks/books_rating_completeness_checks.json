@@ -1,0 +1,69 @@
+{
+  "dataset_name": "books_rating",
+  "quality_dimension": "completeness",
+  "input_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "summary_output_path": "artifacts/data_quality/books_rating/completeness/summary",
+  "summary_output_format": "csv",
+  "failed_rows_base_path": "artifacts/data_quality/books_rating/completeness/failed_rows",
+  "failed_rows_output_format": "csv",
+  "checks": [
+    {
+      "name": "title_not_null_monitor",
+      "type": "not_null",
+      "column": "title",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "title_key_not_null_monitor",
+      "type": "not_null",
+      "column": "title_key",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "user_id_not_null_monitor",
+      "type": "not_null",
+      "column": "user_id",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "profile_name_not_null_monitor",
+      "type": "not_null",
+      "column": "profile_name",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "price_not_null_monitor",
+      "type": "not_null",
+      "column": "price",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "review_summary_not_null_monitor",
+      "type": "not_null",
+      "column": "review_summary",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "review_text_not_null_monitor",
+      "type": "not_null",
+      "column": "review_text",
+      "severity": "warning",
+      "sample_limit": 100
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "books-rating-completeness-check",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}

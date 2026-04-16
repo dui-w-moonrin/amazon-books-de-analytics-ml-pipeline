@@ -1,0 +1,41 @@
+{
+  "dataset_name": "books_data",
+  "quality_dimension": "completeness",
+  "input_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "summary_output_path": "artifacts/data_quality/books_data/completeness/summary",
+  "summary_output_format": "csv",
+  "failed_rows_base_path": "artifacts/data_quality/books_data/completeness/failed_rows",
+  "failed_rows_output_format": "csv",
+  "checks": [
+    {
+      "name": "published_date_not_in_future",
+      "type": "not_in_future",
+      "column": "published_date",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "ratings_count_non_negative",
+      "type": "non_negative",
+      "column": "ratings_count",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "title_key_duplicate_monitor",
+      "type": "duplicate_key",
+      "key_columns": ["title_key"],
+      "severity": "warning",
+      "sample_limit": 100
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "silver-data-quality-books-data",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}

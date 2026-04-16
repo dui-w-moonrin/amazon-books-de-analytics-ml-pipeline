@@ -1,0 +1,76 @@
+{
+  "dataset_name": "books_data",
+  "quality_dimension": "completeness",
+  "input_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "summary_output_path": "artifacts/data_quality/books_data/completeness/summary",
+  "summary_output_format": "csv",
+  "failed_rows_base_path": "artifacts/data_quality/books_data/completeness/failed_rows",
+  "failed_rows_output_format": "csv",
+  "checks": [
+    {
+      "name": "title_not_null_monitor",
+      "type": "not_null",
+      "column": "title",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "title_key_not_null_monitor",
+      "type": "not_null",
+      "column": "title_key",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "description_not_null_monitor",
+      "type": "not_null",
+      "column": "description",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "authors_not_null_monitor",
+      "type": "not_null",
+      "column": "authors",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "publisher_not_null_monitor",
+      "type": "not_null",
+      "column": "publisher",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "published_date_not_null_monitor",
+      "type": "not_null",
+      "column": "published_date",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "categories_not_null_monitor",
+      "type": "not_null",
+      "column": "categories",
+      "severity": "warning",
+      "sample_limit": 100
+    },
+    {
+      "name": "ratings_count_not_null_monitor",
+      "type": "not_null",
+      "column": "ratings_count",
+      "severity": "warning",
+      "sample_limit": 100
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "books-data-completeness-check",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}
