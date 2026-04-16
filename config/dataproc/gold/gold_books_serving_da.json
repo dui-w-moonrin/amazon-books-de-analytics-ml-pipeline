@@ -1,0 +1,41 @@
+{
+  "output_name": "books_serving_da",
+  "inputs": {
+    "books": {
+      "dataset_name": "books_data",
+      "asset_name": "silver_eligible",
+      "format": "parquet"
+    }
+  },
+  "serving": {
+    "base_input": "books",
+    "joins": [],
+    "filters": [],
+    "select_columns": [
+      "title",
+      "description",
+      "authors",
+      "publisher",
+      "published_date",
+      "categories",
+      "ratings_count",
+      "completeness_score",
+      "title_hash"
+    ]
+  },
+  "output": {
+    "dataset_name": "books_data",
+    "asset_name": "gold_books_serving_da",
+    "format": "parquet",
+    "mode": "overwrite",
+    "partitions": 1
+  },
+  "spark": {
+    "app_name": "gold-books-serving-da-prod",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 4,
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
+  }
+}
