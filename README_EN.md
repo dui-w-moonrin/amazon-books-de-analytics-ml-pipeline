@@ -29,7 +29,7 @@ The pipeline is designed to:
 
 ![Business Use Case](docs/images/business_use_case.png)
 
-**Amazon Books Data ~(3GB)**
+**Amazon Books Data ~(3GB)** [212,404 rows * 10 columns + 3,000,000 rows * 10 columns]
 - **Data Analyst (DA)** needs clean, analytics-ready outputs for dashboards and reports because the raw dataset is too large and too messy for direct spreadsheet or BI use.
 - **Data Scientist (DS)** needs curated review-level text data for future NLP and sentiment analysis use cases.
 - **Data Engineer (DE)** responds by defining output requirements and refresh frequency first, then designing a **batch-oriented pipeline** to serve both downstream consumers.
@@ -40,15 +40,42 @@ The pipeline is designed to:
 
 ![Architecture Diagram](docs/images/architecture_diagram.png)
 
-### Architecture Layers / Tech Stack
+## 🛠 Tech Stack
 
-- **Source Layer**: Amazon Books raw dataset (`books_data`, `books_rating`) as the upstream data source  
-- **Storage Layer (Bronze)**: **Google Cloud Storage (GCS)** for raw and landing data zones  
-- **Processing Layer (Silver)**: **PySpark** jobs executed on **Dataproc** for data cleansing, standardization, and transformation  
-- **Orchestration Layer**: **Apache Airflow (Cloud Composer)** for batch workflow orchestration and task scheduling  
-- **Serving Layer (Gold)**: **BigQuery** serving **analytics-ready views** and **DS-ready curated datasets**  
-- **Consumption Layer**: **Looker Studio** dashboards and reports for analytics consumption  
-- **Development Layer**: **Docker** for local reproducible environments and **GitHub** for version-controlled delivery
+### Core Data Engineering
+- **PySpark**
+- **Apache Airflow**
+- **Google Cloud Composer**
+- **Google Cloud Storage (GCS)**
+- **Google Cloud Dataproc Serverless**
+- **BigQuery**
+- **Looker Studio**
+
+### Local Development / Reproducibility
+- **Docker**
+- **Docker Compose**
+- **Apache Airflow 3.2.0 (Local)**
+- **Python**
+- **VS Code**
+- **Git / GitHub**
+
+### Cloud / Production-style Components
+- **Apache Airflow 2.10.5 on Cloud Composer**
+- **Kubernetes (K8s)**
+- **Dataproc Serverless Batches**
+- **GCS Buckets**
+- **BigQuery serving layer**
+- **IAM / Service Accounts**
+- **Cloud Logging**
+- **Kaggle dataset as source ingestion target**
+
+### Data Processing / Data Modeling Approach
+- **Bronze → Silver → Gold**
+- **Config-driven transformations**
+- **Environment-driven path resolution**
+- **Data quality checks**
+- **Relationship checks**
+- **Serving views for BI consumption**
 
 ## 🗂 Dataset
 
@@ -65,7 +92,7 @@ _The files have information about 3M book reviews for 212,404 unique book and us
 
 ---
 
-### 🧱 Entity Relationship - ERD (source-aligned)
+### 🧱 Entity Relationship - ERD (Pipeline-designed)
 
 ```mermaid
 erDiagram
@@ -73,7 +100,7 @@ erDiagram
     BOOKS_DATA ||--o{ BOOKS_RATING : joins_on_title_candidate
 
     BOOKS_DATA {
-        string title PK
+        string title_hash PK
         string description
         string authors
         string image_url
@@ -86,8 +113,7 @@ erDiagram
     }
 
     BOOKS_RATING {
-        int id PK
-        string title FK
+        string title_hash FK
         string price_raw
         string user_id
         string profile_name
@@ -99,91 +125,100 @@ erDiagram
     }
 ```
 
-## 🔄 Pipeline Flow & Outputs
+---
 
-### 🔁 Pipeline Flow
+## 🥉 Bronze Layer
 
-The pipeline follows a **batch-oriented workflow**:
-
-1. Ingest raw data into **Google Cloud Storage (GCS)**  
-2. Execute **PySpark jobs on Dataproc** for data cleansing and transformation  
-3. Standardize and split data into:
-   - analytics-ready datasets  
-   - DS-ready curated datasets  
-4. Publish outputs as **BigQuery views**  
-5. Enable downstream consumption via **Looker Studio**
+- Ingest raw CSV
+- Convert to parquet
+- Preserve raw structure
 
 ---
 
-### ⏱ Orchestration (Airflow DAG)
+## 🥈 Silver Layer
 
-![Airflow DAG](docs/images/airflow_dag.png)
-
-The pipeline is orchestrated using **Apache Airflow (Cloud Composer)** to manage task dependencies, scheduling, and batch execution.
-
----
-
-### 📦 Serving Outputs
-
-#### 📊 Analytics-ready Views (for Data Analysts)
-- `vw_book_catalog`
-- `vw_review_summary`
-- `vw_review_trend`
-
-#### 🤖 DS-ready Curated Dataset (for Data Scientists)
-- `vw_ds_review_text_curated`
+- Clean & standardize
+- Cast types
+- Generate keys
+- Data quality checks
+- Relationship validation
 
 ---
 
-### 📊 Dashboard & Report
-https://datastudio.google.com/s/rl8YWVJNbvg
-![Dashboard](docs/images/dashboard.png)
-![Report](docs/images/report.png)
+## 🥇 Gold Layer
 
-These outputs demonstrate how the pipeline supports downstream analytics and reporting use cases.
+- Prepare downstream datasets
+- Current approach: partial local → BigQuery serving (interim)
+
+---
+
+## 📦 BigQuery Serving
+
+Example views:
+
+- v_book_performance_bi
+- v_review_daily_bi
+- v_category_summary_bi
+
+---
+
+
+## 📊 Looker Studio Demo
+
+![Demo](/docs/images/bi_screenshot.png)
+
+[Demo](https://datastudio.google.com/s/rl8YWVJNbvg)
+
+
+- Data is queryable
+- Pipeline reaches consumption
+
+---
+
+## ⚠️ Key Challenges
+
+- Large data → RAM constraints
+- Dataproc CPU quota limits
+- Dependency packaging issues
+- Spark date handling quirks
+- Path mismatch (local vs cloud)
+- Airflow path resolution
 
 ---
 
 ## 💡 Skills Demonstrated
 
-- End-to-end **data pipeline design (Bronze → Silver → Gold)**  
-- Data processing using **PySpark on Dataproc**  
-- Workflow orchestration with **Apache Airflow (Cloud Composer)**  
-- Data warehousing and serving via **BigQuery**  
-- Delivering analytics-ready and ML-ready datasets  
-- Supporting downstream teams (Data Analyst / Data Scientist)
+- End-to-end DE pipeline
+- PySpark processing
+- GCP ecosystem usage
+- Config-driven design
+- Real-world debugging
 
 ---
 
-## 📁 Repository Structure
-
-```text
-project-root/
-│
-├── README.md
-
-```
 ## 🔒 Scope (MVP)
 
-This project focuses on a minimum viable data pipeline:
+Included:
+- Batch pipeline
+- PySpark transform
+- BigQuery serving
 
-- Batch data ingestion and transformation
-- PySpark-based data processing
-- BigQuery serving layer
-- Basic dashboard and report demonstration
-- GitHub-ready documentation
+Not included:
+- Streaming
+- CI/CD
+- Full observability
 
-### The following items are intentionally out of scope:
-
-- Real-time / streaming pipeline
-- Full production monitoring and alerting
-- Advanced data quality frameworks
-- Infrastructure-as-Code (Terraform)
+---
 
 ## 🚧 Future Improvements
-- Add data quality validation checks (e.g., null, duplicates, constraints)
-- Implement unit and integration testing for pipeline reliability
-- Extend orchestration with more robust DAG structure
-- Introduce streaming ingestion (Kafka)
-- Explore container orchestration (Kubernetes)
-- Improve performance optimization and partitioning strategies
+
+- Add tests
+- Improve performance tuning
+- Add lineage / observability
+- Implement SCD Type 2
+
+---
+
+## ✅ Conclusion
+
+This project demonstrates the ability to build and operate a real-world data pipeline from raw ingestion to BI-ready serving layer under practical constraints.
