@@ -5,11 +5,6 @@
       "dataset_name": "books_data",
       "asset_name": "silver_eligible",
       "format": "parquet"
-    },
-    "reviews": {
-      "dataset_name": "books_rating",
-      "asset_name": "silver_quality_enriched",
-      "format": "parquet"
     }
   },
   "serving": {
@@ -17,7 +12,6 @@
     "joins": [],
     "filters": [],
     "select_columns": [
-      "title_key",
       "title",
       "description",
       "authors",
@@ -25,10 +19,9 @@
       "published_date",
       "categories",
       "ratings_count",
-      "title_hash",
-      "completeness_score"
-    ],
-    "deduplicate_on": ["title_key"]
+      "completeness_score",
+      "title_hash"
+    ]
   },
   "output": {
     "path": "data/gold/books_serving_da.parquet",

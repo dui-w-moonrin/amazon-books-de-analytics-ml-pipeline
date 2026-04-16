@@ -1,0 +1,49 @@
+{
+  "dataset_name": "books_rating",
+  "quality_dimension": "validity",
+  "input_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "summary_output_path": "artifacts/data_quality/books_rating/validity/summary",
+  "summary_output_format": "csv",
+  "failed_rows_base_path": "artifacts/data_quality/books_rating/validity/failed_rows",
+  "failed_rows_output_format": "csv",
+  "checks": [
+    {
+      "name": "book_source_id_not_null",
+      "type": "not_null",
+      "column": "book_source_id",
+      "severity": "critical",
+      "sample_limit": 100
+    },
+    {
+      "name": "review_score_in_allowed_set",
+      "type": "value_in_set",
+      "column": "review_score",
+      "allowed_values": [1, 2, 3, 4, 5],
+      "severity": "critical",
+      "sample_limit": 100
+    },
+    {
+      "name": "review_timestamp_not_null",
+      "type": "not_null",
+      "column": "review_timestamp",
+      "severity": "critical",
+      "sample_limit": 100
+    },
+    {
+      "name": "price_non_negative",
+      "type": "non_negative",
+      "column": "price",
+      "severity": "warning",
+      "sample_limit": 100
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "books-rating-validity-check",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}

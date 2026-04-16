@@ -1,0 +1,27 @@
+{
+  "dataset_name": "books_rating",
+  "quality_dimension": "uniqueness",
+  "input_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "summary_output_path": "artifacts/data_quality/books_rating/uniqueness/summary",
+  "summary_output_format": "csv",
+  "failed_rows_base_path": "artifacts/data_quality/books_rating/uniqueness/failed_rows",
+  "failed_rows_output_format": "csv",
+  "checks": [
+    {
+      "name": "book_source_id_duplicate_monitor",
+      "type": "duplicate_key",
+      "key_columns": ["book_source_id"],
+      "severity": "warning",
+      "sample_limit": 100
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "books-rating-uniqueness-check",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}

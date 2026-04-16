@@ -1,0 +1,28 @@
+{
+  "dataset_name": "books_rating",
+  "quality_dimension": "consistency",
+  "input_asset": "silver_quality_enriched",
+  "input_format": "parquet",
+  "summary_output_path": "artifacts/data_quality/books_rating/consistency/summary",
+  "summary_output_format": "csv",
+  "failed_rows_base_path": "artifacts/data_quality/books_rating/consistency/failed_rows",
+  "failed_rows_output_format": "csv",
+  "checks": [
+    {
+      "name": "title_hash_required_when_title_key_present",
+      "type": "requires_when_present",
+      "required_column": "title_hash",
+      "when_present_column": "title_key",
+      "severity": "warning",
+      "sample_limit": 100
+    }
+  ],
+  "spark": {
+    "master": "local[1]",
+    "app_name": "books-rating-consistency-check",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 2,
+    "max_partition_bytes": "16m"
+  }
+}
