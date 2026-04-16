@@ -1,0 +1,39 @@
+{
+  "output_name": "reviews_serving_da",
+  "inputs": {
+    "reviews": {
+      "dataset_name": "books_rating",
+      "asset_name": "silver_quality_enriched",
+      "format": "parquet"
+    }
+  },
+  "serving": {
+    "base_input": "reviews",
+    "joins": [],
+    "filters": [],
+    "select_columns": [
+      "title",
+      "price",
+      "review_score",
+      "review_timestamp",
+      "review_date",
+      "review_summary",
+      "title_hash"
+    ]
+  },
+  "output": {
+    "dataset_name": "books_rating",
+    "asset_name": "gold_reviews_serving_da",
+    "format": "parquet",
+    "mode": "overwrite",
+    "partitions": 1
+  },
+  "spark": {
+    "app_name": "gold-reviews-serving-da-prod",
+    "driver_memory": "4g",
+    "shuffle_partitions": 8,
+    "default_parallelism": 4,
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
+  }
+}

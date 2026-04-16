@@ -43,9 +43,11 @@ class GoldServeJob:
 
         builder = (
             SparkSession.builder
-            .master(spark_config.get("master", "local[1]"))
             .appName(spark_config.get("app_name", f"gold-serve-{output_name}"))
-            .config("spark.driver.memory", spark_config.get("driver_memory", "4g"))
+            .config(
+                "spark.driver.memory",
+                spark_config.get("driver_memory", "4g"),
+            )
             .config(
                 "spark.sql.shuffle.partitions",
                 str(spark_config.get("shuffle_partitions", 8)),
@@ -58,6 +60,14 @@ class GoldServeJob:
                 "spark.sql.files.maxPartitionBytes",
                 spark_config.get("max_partition_bytes", "16m"),
             )
+            .config(
+                "spark.sql.parquet.compression.codec",
+                spark_config.get("compression", "snappy"),
+            )
+            .config("spark.sql.parquet.datetimeRebaseModeInWrite", "LEGACY")
+            .config("spark.sql.parquet.datetimeRebaseModeInRead", "LEGACY")
+            .config("spark.sql.parquet.int96RebaseModeInWrite", "LEGACY")
+            .config("spark.sql.parquet.int96RebaseModeInRead", "LEGACY")
         )
         return builder.getOrCreate()
 
@@ -83,11 +93,24 @@ class GoldServeJob:
 
     def _resolve_output_path(self) -> Path:
         output_cfg = self.config.get("output", {})
-        output_path = output_cfg.get("path")
-        if not output_path:
-            raise KeyError("output.path is required")
 
-        return resolve_path(self.project_root, output_path)
+        output_path = output_cfg.get("path")
+        if output_path:
+            return resolve_path(self.project_root, output_path)
+
+        dataset_name = output_cfg.get("dataset_name")
+        asset_name = output_cfg.get("asset_name")
+
+        if dataset_name and asset_name:
+            return get_resolved_asset_path(
+                project_root=self.project_root,
+                dataset_name=dataset_name,
+                asset_name=asset_name,
+            )
+
+        raise KeyError(
+            "output must define either path or (dataset_name, asset_name)"
+        )
 
     def _read_input_df(
         self,

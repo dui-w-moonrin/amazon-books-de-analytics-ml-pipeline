@@ -3,9 +3,9 @@
   "quality_dimension": "completeness",
   "input_asset": "silver_quality_enriched",
   "input_format": "parquet",
-  "summary_output_path": "artifacts/data_quality/books_rating/summary",
+  "summary_output_path": "/tmp/dataproc_artifacts/data_quality/books_rating/completeness/summary",
   "summary_output_format": "csv",
-  "failed_rows_base_path": "artifacts/data_quality/books_rating/failed_rows",
+  "failed_rows_base_path": "/tmp/dataproc_artifacts/data_quality/books_rating/completeness/failed_rows",
   "failed_rows_output_format": "csv",
   "checks": [
     {
@@ -19,7 +19,13 @@
       "name": "review_score_in_allowed_set",
       "type": "value_in_set",
       "column": "review_score",
-      "allowed_values": [1, 2, 3, 4, 5],
+      "allowed_values": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
       "severity": "critical",
       "sample_limit": 100
     },
@@ -61,11 +67,11 @@
     }
   ],
   "spark": {
-    "master": "local[1]",
-    "app_name": "silver-data-quality-books-rating",
+    "app_name": "silver-data-quality-books-rating-prod",
     "driver_memory": "4g",
     "shuffle_partitions": 8,
-    "default_parallelism": 2,
-    "max_partition_bytes": "16m"
+    "default_parallelism": 4,
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
   }
 }

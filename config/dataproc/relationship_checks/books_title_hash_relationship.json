@@ -9,16 +9,16 @@
   "input_format": "parquet",
   "severity": "critical",
   "sample_limit": 100,
-  "summary_output_path": "artifacts/relationship_checks/books_rating_to_books_data_title_hash/summary",
+  "summary_output_path": "/tmp/dataproc_artifacts/relationship_checks/books_rating_to_books_data_title_hash/summary",
   "summary_output_format": "csv",
-  "failed_rows_output_path": "artifacts/relationship_checks/books_rating_to_books_data_title_hash/failed_rows",
+  "failed_rows_output_path": "/tmp/dataproc_artifacts/relationship_checks/books_rating_to_books_data_title_hash/failed_rows",
   "failed_rows_output_format": "csv",
   "spark": {
-    "master": "local[1]",
-    "app_name": "silver-cross-check-books-title-hash-relationship",
+    "app_name": "silver-relationship-books-title-hash-prod",
     "driver_memory": "4g",
     "shuffle_partitions": 8,
-    "default_parallelism": 2,
-    "max_partition_bytes": "16m"
+    "default_parallelism": 4,
+    "max_partition_bytes": "134217728",
+    "compression": "snappy"
   }
 }
