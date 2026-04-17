@@ -5,10 +5,10 @@ By **Dui – Watcharapong Moonrin**
 > README หน้านี้เป็นเวอร์ชันภาษาไทยสำหรับใช้เป็น portfolio / GitHub project page  
 > โปรเจกต์นี้โฟกัสการสาธิตความสามารถสาย **Data Engineer** เป็นหลัก ไม่ได้เน้นทำ dashboard เชิง Data Analyst แบบเต็มรูปแบบ
 
-[เวอร์ชันเต็ม (ไทย) สามารถอ่านได้ที่นี่]('README_FULL.md')
+[เวอร์ชันเต็ม (ไทย) สามารถอ่านได้ที่นี่](README_FULL.md)
 
 
-[English version can be read here]('README_EN.md')
+[English version can be read here](README_EN.md)
 
 
 ---
