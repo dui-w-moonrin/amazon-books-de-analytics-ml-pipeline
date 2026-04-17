@@ -1,5 +1,5 @@
 # 📚 Amazon Books Data Engineering Pipeline (End-to-End)
-By "Dui" Watcharapong Moonrin
+Dui – Watcharapong Moonrin
 
 An end-to-end **data engineering portfolio project** that prepares Amazon Books raw data for two downstream use cases:
 
@@ -167,7 +167,7 @@ Example views:
 
 ![Demo](/docs/images/bi_screenshot.png)
 
-[Demo](https://datastudio.google.com/s/rl8YWVJNbvg)
+[Demo](https://datastudio.google.com/s/jqeVpwP_tzw)
 
 
 - Data is queryable

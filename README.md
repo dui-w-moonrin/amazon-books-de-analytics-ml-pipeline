@@ -1,6 +1,6 @@
 # 📚 Amazon Books Data Engineering Pipeline (End-to-End)
-โดย **ดุ๋ย – วัชรพงษ์ มูลรินทร์**  
-By **Dui – Watcharapong Moonrin**
+**ดุ๋ย – วัชรพงษ์ มูลรินทร์**  
+**Dui – Watcharapong Moonrin**
 
 > README หน้านี้เป็นเวอร์ชันภาษาไทยสำหรับใช้เป็น portfolio / GitHub project page  
 > โปรเจกต์นี้โฟกัสการสาธิตความสามารถสาย **Data Engineer** เป็นหลัก ไม่ได้เน้นทำ dashboard เชิง Data Analyst แบบเต็มรูปแบบ
@@ -216,7 +216,7 @@ Gold layer เป็นชั้นสำหรับส่งมอบข้อ
 ## 📊 Looker Studio Demo
 ![Demo](/docs/images/bi_screenshot.png)
 
-[Demo](https://datastudio.google.com/s/rl8YWVJNbvg)
+[Demo](https://datastudio.google.com/s/jqeVpwP_tzw)
 
 *เนื่องจากเป็นเพียงการสาธิตว่าสามารถนำ Gold ไปใช้งานขึ้น BI ได้ จึง Implement Demo เพียงบางส่วนเท่านั้น*
 
