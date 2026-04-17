@@ -1,4 +1,4 @@
-# 📚 Amazon Books DE Analytics ML Pipeline
+# 📚 Amazon Books Data Engineering Pipeline (End-to-End)
 By "Dui" Watcharapong Moonrin
 
 An end-to-end **data engineering portfolio project** that prepares Amazon Books raw data for two downstream use cases:

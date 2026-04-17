@@ -1,4 +1,4 @@
-# 📚 Amazon Books DE Analytics ML Pipeline
+# 📚 Amazon Books Data Engineering Pipeline (End-to-End)
 โดย **ดุ๋ย – วัชรพงษ์ มูลรินทร์**  
 By **Dui – Watcharapong Moonrin**
 
