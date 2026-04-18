@@ -216,7 +216,7 @@ Gold layer เป็นชั้นสำหรับส่งมอบข้อ
 ## 📊 Looker Studio Demo
 ![Demo](/docs/images/bi_screenshot.png)
 
-[Demo](https://datastudio.google.com/s/jqeVpwP_tzw)
+[Demo](https://datastudio.google.com/s/o4eNN6GTweM)
 
 *เนื่องจากเป็นเพียงการสาธิตว่าสามารถนำ Gold ไปใช้งานขึ้น BI ได้ จึง Implement Demo เพียงบางส่วนเท่านั้น*
 
