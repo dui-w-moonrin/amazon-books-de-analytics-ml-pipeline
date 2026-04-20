@@ -167,7 +167,7 @@ Example views:
 
 ![Demo](/docs/images/bi_screenshot.png)
 
-[Demo](https://datastudio.google.com/s/o4eNN6GTweM)
+[Demo](https://datastudio.google.com/s/m-6cHhQy9jM)
 
 
 - Data is queryable
